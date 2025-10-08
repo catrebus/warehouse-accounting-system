@@ -1,0 +1,58 @@
+QWidget#LoginWindow {
+    background-color: #202020;
+}
+
+
+QPushButton#authButton{
+    background-color:#fafafa;
+    padding: 10px, 12px;
+    border: none;
+    border-radius: 20px;
+    font-weight:bold;
+    font-size: 20px;
+    color: #0000FF;
+    border: 2px solid #0000FF;
+}
+
+QPushButton#authButton:hover {
+    background-color: #DCDCDC;
+}
+
+QPushButton#togglePasswordButton {
+    background-color:#fafafa;
+    padding: 10px, 12px;
+    border: none;
+    border-radius: 20px;
+    border: 2px solid #0000FF;
+}
+
+QPushButton#togglePasswordButton:hover {
+    background-color: #DCDCDC;
+}
+
+QPushButton#authButton:pressed {
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+
+QLabel#titleLabel {
+    color:#fafafa;
+    font-size:32px;
+    font-weight:bold;
+}
+
+QLineEdit#usernameInput,QLineEdit#passwordInput  {
+    background-color: #fafafa;
+    border: 2px solid #c7c7c7;
+    border-radius: 20px;
+    font-size:15px;
+    color: #2c2c2c;
+    padding: 10px 5px;
+}
+
+QLineEdit#usernameInput:focus,QLineEdit#passwordInput:focus {
+    background-color: #FFFFFF;
+    border: 2px solid #0000FF;
+}
+
