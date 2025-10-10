@@ -1,8 +1,9 @@
 import sys
 
-from PyQt6.QtGui import QIcon, QPixmap, QAction
+from PyQt6.QtGui import QIcon, QPixmap, QAction, QColor
 from PyQt6.QtWidgets import (
-    QWidget, QLineEdit, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QMessageBox, QApplication
+    QWidget, QLineEdit, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QMessageBox, QApplication, QFrame,
+    QGraphicsDropShadowEffect
 )
 from PyQt6.QtCore import Qt, QSize
 
@@ -12,7 +13,7 @@ class LoginWindow(QWidget):
         super().__init__()
         self.setWindowTitle('Авторизация')
         self.setFixedSize(960, 540)
-        self.setWindowIcon(QIcon('assets/icons/310869.png'))
+        self.setWindowIcon(QIcon('assets/icons/auth_icon4.png'))
         self.setObjectName('LoginWindow')
         # Инициализация пользовательского интерфейса
         self.init_ui()
@@ -21,12 +22,14 @@ class LoginWindow(QWidget):
         """Инициализация пользовательского интерфейса"""
 
         """Правая часть окна"""
+        # Заголовок
         titleLabel = QLabel('Авторизация')
         titleLabel.setObjectName('titleLabel')
-        titleLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        titleLabel.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         titleLabel.setFixedWidth(300)
+        titleLabel.setFixedHeight(35)
 
-        # Поле логина
+        # Поле ввода логина
         self.usernameInput = QLineEdit()
         self.usernameInput.setObjectName('usernameInput')
         userIcon = QIcon('assets/icons/login_icon.png')
@@ -35,8 +38,13 @@ class LoginWindow(QWidget):
         self.usernameInput.setPlaceholderText('Логин')
 
         # Поле ввода пароля
-
-        passwordLine = QHBoxLayout()
+        self.passwordInput = QLineEdit()
+        self.passwordInput.setObjectName('passwordInput')
+        passwordIcon = QIcon('assets/icons/key_icon.png')
+        self.passwordInput.addAction(passwordIcon, QLineEdit.ActionPosition.LeadingPosition)
+        self.passwordInput.setFixedWidth(300)
+        self.passwordInput.setPlaceholderText('Пароль')
+        self.passwordInput.setEchoMode(QLineEdit.EchoMode.Password)
 
         # Кнопка показать/скрыть пароль
         self.togglePasswordButton = QPushButton()
@@ -45,19 +53,11 @@ class LoginWindow(QWidget):
         self.togglePasswordButton.setFixedWidth(45)
         self.togglePasswordButton.clicked.connect(self.toggle_password_visibility)
 
-
-        self.passwordInput = QLineEdit() # Поле пароля
-        self.passwordInput.setObjectName('passwordInput')
-
-        passwordIcon = QIcon('assets/icons/key_icon.png')
-        self.passwordInput.addAction(passwordIcon, QLineEdit.ActionPosition.LeadingPosition)
-
-        self.passwordInput.setFixedWidth(300)
-        self.passwordInput.setPlaceholderText('Пароль')
-        self.passwordInput.setEchoMode(QLineEdit.EchoMode.Password)
-
+        # Лэйаут для поля пароля и кнопки показать/скрыть
+        passwordLine = QHBoxLayout()
         passwordLine.addWidget(self.passwordInput)
         passwordLine.addWidget(self.togglePasswordButton)
+        passwordLine.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Кнопка входа
         authButton = QPushButton('Вход') # Кнопка входа
@@ -65,22 +65,40 @@ class LoginWindow(QWidget):
         authButton.clicked.connect(self.handle_login)
         authButton.setFixedWidth(300)
 
+        # Подложка для формы авторизации
+        self.card = QFrame()
+        self.card.setObjectName('card')
+        self.card.setFixedSize(400, 300)
+
+        cardLayout = QVBoxLayout(self.card)
+        cardLayout.setContentsMargins(30, 30, 15, 30)
+
+        # Эффекты для подложки
+        cardEffect = QGraphicsDropShadowEffect()
+        cardEffect.setBlurRadius(30)
+        cardEffect.setXOffset(0)
+        cardEffect.setYOffset(4)
+        cardEffect.setColor(QColor(0, 0, 0, 120))
+        self.card.setGraphicsEffect(cardEffect)
+
+        # Размещение виджетов на подложке
+        cardLayout.addWidget(titleLabel)
+        cardLayout.addSpacing(25)
+
+        cardLayout.addWidget(self.usernameInput)
+        cardLayout.addSpacing(10)
+
+        cardLayout.addLayout(passwordLine)
+        cardLayout.addSpacing(10)
+
+        cardLayout.addWidget(authButton)
+        cardLayout.addSpacing(10)
+
         # Размещение
         rightLayout = QVBoxLayout()
+        rightLayout.addWidget(self.card)
+        rightLayout.setContentsMargins(0, 0, 70, 0)
 
-        rightLayout.addWidget(titleLabel)
-        rightLayout.addSpacing(25)
-
-        rightLayout.addWidget(self.usernameInput)
-        rightLayout.addSpacing(10)
-
-        rightLayout.addLayout(passwordLine)
-        rightLayout.addSpacing(25)
-
-        rightLayout.addWidget(authButton)
-
-        rightLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        rightLayout.setContentsMargins(0, 125, 70,0)
 
         """Левая часть окна"""
         iconLabel = QLabel()
@@ -108,5 +126,5 @@ class LoginWindow(QWidget):
         else:
             self.passwordInput.setEchoMode(QLineEdit.EchoMode.Password)
             self.togglePasswordButton.setIcon(QIcon('assets/icons/closed_eye_icon.png'))
-        
+
 
