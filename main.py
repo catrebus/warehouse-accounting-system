@@ -2,8 +2,10 @@ import os
 import sys
 
 from PyQt6.QtGui import QFontDatabase, QFont
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication, QStackedWidget
 from ui.login_window import LoginWindow
+from ui.invite_code_window import InviteCodeWindow
+
 
 # Загрузка стилей
 def load_stylesheets(*files):
@@ -37,6 +39,38 @@ def load_font():
             return name
     return None
 
+# Контроль всех окон приложения
+class WindowManager(QStackedWidget):
+    def __init__(self):
+        super().__init__()
+
+        # Создание окон
+        self.loginWindow = LoginWindow()
+        self.inviteCodeWindow = InviteCodeWindow()
+
+        # Добавление окон в менеджер
+        self.addWidget(self.loginWindow)
+        self.addWidget(self.inviteCodeWindow)
+
+        # Подключение сигналов
+        self.loginWindow.switchToRegister.connect(lambda: self.show_invite_code(self.inviteCodeWindow))
+        self.inviteCodeWindow.switchToLogin.connect(lambda: self.show_login(self.loginWindow))
+
+        # Установка начального окна
+        self.show_login(self.loginWindow)
+
+    """Методы для переключения между окнами"""
+    def show_invite_code(self, window):
+        window.apply_window_properties(self)
+        self.setCurrentWidget(self.inviteCodeWindow)
+
+    def show_login(self,window):
+        window.apply_window_properties(self)
+        self.setCurrentWidget(self.loginWindow)
+
+
+
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 
@@ -49,6 +83,7 @@ if __name__ == "__main__":
     # Применение стилей
     app.setStyleSheet(load_stylesheets('styles/login.qss'))
 
-    window = LoginWindow()
-    window.show()
+    windowManager = WindowManager()
+    windowManager.show()
+
     sys.exit(app.exec())

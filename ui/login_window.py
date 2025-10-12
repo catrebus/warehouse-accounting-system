@@ -1,20 +1,26 @@
-import sys
-
-from PyQt6.QtGui import QIcon, QPixmap, QAction, QColor
+from PyQt6.QtCore import Qt, QSize, pyqtSignal
+from PyQt6.QtGui import QIcon, QPixmap, QColor
 from PyQt6.QtWidgets import (
-    QWidget, QLineEdit, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QMessageBox, QApplication, QFrame,
-    QGraphicsDropShadowEffect
+    QLineEdit, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QFrame,
+    QGraphicsDropShadowEffect, QWidget
 )
-from PyQt6.QtCore import Qt, QSize
+
+from ui.base_window import BaseWindow
 
 
-class LoginWindow(QWidget):
+class LoginWindow(BaseWindow):
+
+    # Сигналы для перехода
+    switchToRegister = pyqtSignal()
+
+    #Характеристики окна
+    widowTitle: str = 'Система складского учета - Авторизация'
+    windowSize: QSize = QSize(960, 540)
+    resizable: bool = False
+    windowIconPath: str = 'assets/icons/app_icon.png'
+
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Авторизация')
-        self.setFixedSize(960, 540)
-        self.setWindowIcon(QIcon('assets/icons/auth_icon4.png'))
-        self.setObjectName('LoginWindow')
         # Инициализация пользовательского интерфейса
         self.init_ui()
 
@@ -26,8 +32,8 @@ class LoginWindow(QWidget):
         titleLabel = QLabel('Авторизация')
         titleLabel.setObjectName('titleLabel')
         titleLabel.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-        titleLabel.setFixedWidth(300)
-        titleLabel.setFixedHeight(35)
+        titleLabel.setFixedSize(300,35)
+
 
         # Поле ввода логина
         self.usernameInput = QLineEdit()
@@ -60,15 +66,21 @@ class LoginWindow(QWidget):
         passwordLine.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Кнопка входа
-        authButton = QPushButton('Вход') # Кнопка входа
-        authButton.setObjectName('authButton')
-        authButton.clicked.connect(self.handle_login)
-        authButton.setFixedWidth(300)
+        handleLoginButton = QPushButton('Войти') # Кнопка входа
+        handleLoginButton.setObjectName('handleLoginButton')
+        handleLoginButton.clicked.connect(self.handle_login)
+        handleLoginButton.setFixedWidth(300)
+
+        # Кнопка регистрация
+        switchToRegister = QPushButton('Регистрация')
+        switchToRegister.setObjectName('switchToRegister')
+        switchToRegister.clicked.connect(self.switchToRegister)
+        switchToRegister.setFixedSize(90, 20)
 
         # Подложка для формы авторизации
         self.card = QFrame()
-        self.card.setObjectName('card')
-        self.card.setFixedSize(400, 300)
+        self.card.setObjectName('cardLogin')
+        self.card.setFixedSize(400, 320)
 
         cardLayout = QVBoxLayout(self.card)
         cardLayout.setContentsMargins(30, 30, 15, 30)
@@ -86,19 +98,17 @@ class LoginWindow(QWidget):
         cardLayout.addSpacing(25)
 
         cardLayout.addWidget(self.usernameInput)
-        cardLayout.addSpacing(10)
 
         cardLayout.addLayout(passwordLine)
         cardLayout.addSpacing(10)
 
-        cardLayout.addWidget(authButton)
-        cardLayout.addSpacing(10)
+        cardLayout.addWidget(handleLoginButton)
 
         # Размещение
         rightLayout = QVBoxLayout()
         rightLayout.addWidget(self.card)
-        rightLayout.setContentsMargins(0, 0, 70, 0)
-
+        rightLayout.addWidget(switchToRegister, alignment=Qt.AlignmentFlag.AlignTop)
+        rightLayout.setContentsMargins(0, 100, 70, 0)
 
         """Левая часть окна"""
         iconLabel = QLabel()
@@ -109,8 +119,14 @@ class LoginWindow(QWidget):
         leftLayout = QHBoxLayout()
         leftLayout.addWidget(iconLabel)
 
+        """Задний фон"""
+        self.bgWidget = QWidget(self)
+        self.bgWidget.setObjectName('bgWidget')
+        self.bgWidget.resize(self.windowSize)
+        self.bgWidget.lower()
+
         """Главный компоновщик"""
-        mainLayout = QHBoxLayout()
+        mainLayout = QHBoxLayout(self.bgWidget)
         mainLayout.addLayout(leftLayout, stretch=1)
         mainLayout.addLayout(rightLayout, stretch=2)
 

@@ -1,15 +1,14 @@
-QWidget#LoginWindow {
-    background-color: #202020;
+QWidget#bgWidget {
+    background-color: #202020
 }
 
-QFrame#card {
+#cardLogin, #cardRegister {
     background-color: #2B2B2B;
     border: 2px solid #2B2B2B;
     border-radius: 20px;
 }
 
-
-QPushButton#authButton{
+#handleLoginButton, #handleRegisterButton{
     background-color:#fafafa;
     padding: 10px, 12px;
     border: none;
@@ -20,8 +19,13 @@ QPushButton#authButton{
     border: 2px solid #0000FF;
 }
 
-QPushButton#authButton:hover {
+#handleLoginButton:hover, #handleRegisterButton:hover {
     background-color: #DCDCDC;
+}
+
+#handleLoginButton:pressed, #handleRegisterButton:pressed {
+    padding-top: 6px;
+    padding-bottom: 6px;
 }
 
 QPushButton#togglePasswordButton {
@@ -41,9 +45,11 @@ QPushButton#togglePasswordButton:hover {
     background-color: #DCDCDC;
 }
 
-QPushButton#authButton:pressed {
-    padding-top: 6px;
-    padding-bottom: 6px;
+#switchToRegister, #switchToLoginButton {
+    font-size:16px;
+    background-color: none;
+    border:none;
+    text-decoration: underline;
 }
 
 
@@ -51,9 +57,10 @@ QLabel#titleLabel {
     color:#fafafa;
     font-size:32px;
     font-weight:bold;
+    background: transparent;
 }
 
-QLineEdit#usernameInput,QLineEdit#passwordInput  {
+QLineEdit#usernameInput, QLineEdit#passwordInput, QLineEdit#inviteCode  {
     background-color: #fafafa;
     border: 2px solid #c7c7c7;
     border-radius: 20px;
@@ -62,7 +69,7 @@ QLineEdit#usernameInput,QLineEdit#passwordInput  {
     padding: 10px 5px;
 }
 
-QLineEdit#usernameInput:focus,QLineEdit#passwordInput:focus {
+QLineEdit#usernameInput:focus,QLineEdit#passwordInput:focus, QLineEdit#inviteCode:focus {
     background-color: #FFFFFF;
     border: 2px solid #0000FF;
 }
