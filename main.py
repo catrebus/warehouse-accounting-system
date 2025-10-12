@@ -3,8 +3,9 @@ import sys
 
 from PyQt6.QtGui import QFontDatabase, QFont
 from PyQt6.QtWidgets import QApplication, QStackedWidget
+
 from ui.login_window import LoginWindow
-from ui.invite_code_window import InviteCodeWindow
+from ui.register_window import RegisterWindow
 
 
 # Загрузка стилей
@@ -46,29 +47,27 @@ class WindowManager(QStackedWidget):
 
         # Создание окон
         self.loginWindow = LoginWindow()
-        self.inviteCodeWindow = InviteCodeWindow()
+        self.registerWindow = RegisterWindow()
 
         # Добавление окон в менеджер
         self.addWidget(self.loginWindow)
-        self.addWidget(self.inviteCodeWindow)
+        self.addWidget(self.registerWindow)
 
         # Подключение сигналов
-        self.loginWindow.switchToRegister.connect(lambda: self.show_invite_code(self.inviteCodeWindow))
-        self.inviteCodeWindow.switchToLogin.connect(lambda: self.show_login(self.loginWindow))
+        self.loginWindow.switchToRegister.connect(lambda: self.show_register(self.registerWindow))
+        self.registerWindow.switchToLogin.connect(lambda: self.show_login(self.loginWindow))
 
         # Установка начального окна
         self.show_login(self.loginWindow)
 
     """Методы для переключения между окнами"""
-    def show_invite_code(self, window):
-        window.apply_window_properties(self)
-        self.setCurrentWidget(self.inviteCodeWindow)
-
     def show_login(self,window):
         window.apply_window_properties(self)
         self.setCurrentWidget(self.loginWindow)
 
-
+    def show_register(self, window):
+        window.apply_window_properties(self)
+        self.setCurrentWidget(self.registerWindow)
 
 
 if __name__ == "__main__":

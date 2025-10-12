@@ -12,6 +12,7 @@ class LoginWindow(BaseWindow):
 
     # Сигналы для перехода
     switchToRegister = pyqtSignal()
+    switchToMain = pyqtSignal()
 
     #Характеристики окна
     widowTitle: str = 'Система складского учета - Авторизация'
@@ -33,7 +34,6 @@ class LoginWindow(BaseWindow):
         titleLabel.setObjectName('titleLabel')
         titleLabel.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         titleLabel.setFixedSize(300,35)
-
 
         # Поле ввода логина
         self.usernameInput = QLineEdit()
@@ -68,13 +68,13 @@ class LoginWindow(BaseWindow):
         # Кнопка входа
         handleLoginButton = QPushButton('Войти') # Кнопка входа
         handleLoginButton.setObjectName('handleLoginButton')
-        handleLoginButton.clicked.connect(self.handle_login)
+        handleLoginButton.clicked.connect(self.handle_switch_to_main)
         handleLoginButton.setFixedWidth(300)
 
         # Кнопка регистрация
         switchToRegister = QPushButton('Регистрация')
         switchToRegister.setObjectName('switchToRegister')
-        switchToRegister.clicked.connect(self.switchToRegister)
+        switchToRegister.clicked.connect(self.handle_switch_to_invite_code)
         switchToRegister.setFixedSize(90, 20)
 
         # Подложка для формы авторизации
@@ -132,9 +132,7 @@ class LoginWindow(BaseWindow):
 
         self.setLayout(mainLayout)
 
-    def handle_login(self):
-        pass
-
+    # Переключение режима пароля
     def toggle_password_visibility(self):
         if self.passwordInput.echoMode() == QLineEdit.EchoMode.Password:
             self.passwordInput.setEchoMode(QLineEdit.EchoMode.Normal)
@@ -143,4 +141,21 @@ class LoginWindow(BaseWindow):
             self.passwordInput.setEchoMode(QLineEdit.EchoMode.Password)
             self.togglePasswordButton.setIcon(QIcon('assets/icons/closed_eye_icon.png'))
 
+    # Установка окна в изначальное состояние
+    def set_to_default(self):
+        self.usernameInput.clear()
+        self.passwordInput.clear()
+        self.passwordInput.setEchoMode(QLineEdit.EchoMode.Password)
+        self.togglePasswordButton.setIcon(QIcon('assets/icons/closed_eye_icon.png'))
+
+    """Переходы между окнами"""
+    def handle_switch_to_invite_code(self):
+        self.set_to_default()
+        self.switchToRegister.emit()
+
+    def handle_switch_to_main(self):
+        #Проверка ...
+        #self.set_to_default()
+        #self.switchToMain.emit()
+        pass
 
