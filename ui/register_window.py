@@ -3,6 +3,7 @@ from PyQt6.QtGui import QColor, QPixmap, QIcon
 from PyQt6.QtWidgets import QPushButton, QVBoxLayout, QFrame, QGraphicsDropShadowEffect, QHBoxLayout, QLabel, QWidget, \
     QLineEdit
 
+from services.auth_service import register_user
 from ui.base_window import BaseWindow
 
 
@@ -144,7 +145,9 @@ class RegisterWindow(BaseWindow):
         self.switchToLogin.emit()
 
     def handle_switch_to_main(self):
-        # Проверка ...
+        if self.passwordInput.text() == self.confirmPasswordInput.text():
+            result = register_user(self.inviteCode.text(), self.usernameInput.text(), self.passwordInput.text())
+            print(result)
+            self.set_to_default()
         # self.set_to_default()
         # self.switchToMain.emit()
-        pass
