@@ -1,7 +1,9 @@
+import re
+
 from PyQt6.QtCore import pyqtSignal, QSize, Qt
 from PyQt6.QtGui import QColor, QPixmap, QIcon
 from PyQt6.QtWidgets import QPushButton, QVBoxLayout, QFrame, QGraphicsDropShadowEffect, QHBoxLayout, QLabel, QWidget, \
-    QLineEdit
+    QLineEdit, QMessageBox
 
 from services.auth_service import register_user
 from ui.base_window import BaseWindow
@@ -144,10 +146,53 @@ class RegisterWindow(BaseWindow):
         self.set_to_default()
         self.switchToLogin.emit()
 
-    def handle_switch_to_main(self):
-        if self.passwordInput.text() == self.confirmPasswordInput.text():
-            result = register_user(self.inviteCode.text(), self.usernameInput.text(), self.passwordInput.text())
-            print(result)
+    def handle_switch_to_main(self) -> None:
+
+        inviteCode = self.inviteCode.text().strip()
+        login = self.usernameInput.text().strip()
+        password = self.passwordInput.text().strip()
+        confirmPassword = self.confirmPasswordInput.text().strip()
+
+        # Проверка на пустые поля
+        if len(inviteCode) == 0 or len(login) == 0 or len(password) == 0 or len(confirmPassword) == 0:
+            QMessageBox.warning(self, 'Ошибка', 'Все поля должны быть заполнены')
+            return None
+
+        # Валидация логина
+        if not re.match(r"^[A-Za-z0-9_]+$", login):
+            QMessageBox.warning(self, 'Ошибка', 'Логин должен содержать только латинские буквы, цифры и _')
+            return None
+
+        # Проврка количества символов в логине
+        if len(self.usernameInput.text()) < 4 or len(self.passwordInput.text()) > 20:
+            QMessageBox.warning(self, 'Ошибка', 'Логин должен содержать от 4 до 20 символов')
+            return None
+
+        # Валидация пароля
+        if not re.match(r"^[A-Za-z0-9_]+$", password):
+            QMessageBox.warning(self, 'Ошибка', 'Пароль должен содержать только латинские буквы, цифры и _')
+            return None
+
+        # Проверка количества символов пароля
+        if len(self.passwordInput.text()) < 4:
+            QMessageBox.warning(self, 'Ошибка', 'Пароль должен содержать больше 4 символов')
+            return None
+
+        # Проверка соответствия пароля и подтверждения пароля
+        if not password == confirmPassword:
+            QMessageBox.warning(self, 'Ошибка', 'Пароль и подтверждение пароля должны совпадать')
+            return None
+
+        # Попытка регистрации с обращением к бд
+        result = register_user(inviteCode, login, password)
+
+        # Проверка с обращением к бд
+        if not result['success']:
+            QMessageBox.warning(self, 'Ошибка', result['message'])
+            return None
+
+        # Если регистрация успешна
+        if result['success']:
             self.set_to_default()
-        # self.set_to_default()
-        # self.switchToMain.emit()
+            self.switchToMain.emit()
+

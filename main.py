@@ -82,6 +82,7 @@ if __name__ == "__main__":
     # Применение стилей
     app.setStyleSheet(load_stylesheets('styles/login.qss'))
 
+    # Создание и активация менеджера окон
     windowManager = WindowManager()
     windowManager.show()
 
