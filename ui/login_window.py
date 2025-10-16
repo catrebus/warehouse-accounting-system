@@ -2,9 +2,10 @@ from PyQt6.QtCore import Qt, QSize, pyqtSignal
 from PyQt6.QtGui import QIcon, QPixmap, QColor
 from PyQt6.QtWidgets import (
     QLineEdit, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QFrame,
-    QGraphicsDropShadowEffect, QWidget
+    QGraphicsDropShadowEffect, QWidget, QMessageBox
 )
 
+from services.auth_service import authorize_user
 from ui.base_window import BaseWindow
 
 
@@ -74,7 +75,7 @@ class LoginWindow(BaseWindow):
         # Кнопка регистрация
         switchToRegister = QPushButton('Регистрация')
         switchToRegister.setObjectName('switchToRegister')
-        switchToRegister.clicked.connect(self.handle_switch_to_invite_code)
+        switchToRegister.clicked.connect(self.handle_switch_to_register)
         switchToRegister.setFixedSize(90, 20)
 
         # Подложка для формы авторизации
@@ -149,13 +150,20 @@ class LoginWindow(BaseWindow):
         self.togglePasswordButton.setIcon(QIcon('assets/icons/closed_eye_icon.png'))
 
     """Переходы между окнами"""
-    def handle_switch_to_invite_code(self):
+    def handle_switch_to_register(self):
         self.set_to_default()
         self.switchToRegister.emit()
 
-    def handle_switch_to_main(self):
-        #Проверка ...
-        #self.set_to_default()
-        #self.switchToMain.emit()
-        pass
+    def handle_switch_to_main(self) -> None:
+        login = self.usernameInput.text().strip()
+        password = self.passwordInput.text().strip()
+        if len(login) == 0 or len(password) == 0 :
+            QMessageBox.warning(self, 'Ошибка', 'Все поля должны быть заполнены')
+            return None
+        result = authorize_user(login, password)
+        if result['success']:
+            self.set_to_default()
+            self.switchToMain.emit()
+            return None
+        QMessageBox.warning(self, 'Ошибка', result['message'])
 

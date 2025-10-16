@@ -2,7 +2,7 @@ from sqlalchemy import select
 
 from db.db_session import get_db_session
 from db.models import InviteCode, UserAccount, Employee
-from utils.password_utils import hash_password
+from utils.password_utils import hash_password, verify_password
 
 
 def register_user(inviteCode: str, login: str, password: str) -> dict:
@@ -37,3 +37,17 @@ def register_user(inviteCode: str, login: str, password: str) -> dict:
         inviteCodeObj.is_active = 0
 
         return {'success': True, 'message': 'Регистрация прошла успешно'}
+
+def authorize_user(login: str, password: str) -> dict:
+    with get_db_session() as session:
+        #Получение пользователя по логину
+        stmt = select(UserAccount).where(UserAccount.login == login)
+        userObj = session.scalar(stmt)
+
+        # Проверка на существование пользователя
+        if userObj:
+
+            if verify_password(password, userObj.password):
+                return {'success': True, 'message': 'Авторизация прошла успешно'}
+
+        return {'success': False, 'message': 'Неверный логин или пароль'}

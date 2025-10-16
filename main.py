@@ -1,10 +1,12 @@
 import os
 import sys
 
+from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFontDatabase, QFont
 from PyQt6.QtWidgets import QApplication, QStackedWidget
 
 from ui.login_window import LoginWindow
+from ui.main_window import MainWindow
 from ui.register_window import RegisterWindow
 
 
@@ -48,14 +50,18 @@ class WindowManager(QStackedWidget):
         # Создание окон
         self.loginWindow = LoginWindow()
         self.registerWindow = RegisterWindow()
+        self.mainWindow = MainWindow()
 
         # Добавление окон в менеджер
         self.addWidget(self.loginWindow)
         self.addWidget(self.registerWindow)
+        self.addWidget(self.mainWindow)
 
         # Подключение сигналов
         self.loginWindow.switchToRegister.connect(lambda: self.show_register(self.registerWindow))
         self.registerWindow.switchToLogin.connect(lambda: self.show_login(self.loginWindow))
+        self.loginWindow.switchToMain.connect(lambda: self.show_main(self.mainWindow))
+        self.registerWindow.switchToMain.connect(lambda: self.show_main(self.mainWindow))
 
         # Установка начального окна
         self.show_login(self.loginWindow)
@@ -68,6 +74,12 @@ class WindowManager(QStackedWidget):
     def show_register(self, window):
         window.apply_window_properties(self)
         self.setCurrentWidget(self.registerWindow)
+
+    def show_main(self, window):
+        window.apply_window_properties(self)
+        self.setCurrentWidget(self.mainWindow)
+
+
 
 
 if __name__ == "__main__":
