@@ -14,14 +14,10 @@ class BaseWindow(QWidget):
         windowManager.setWindowTitle(self.widowTitle)
         windowManager.setWindowIcon(QIcon(self.windowIconPath))
 
-        windowManager.setMinimumSize(QSize(0, 0))
-        windowManager.setMaximumSize(QSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX))
-
         if not self.resizable:
             windowManager.setFixedSize(self.windowSize)
-
         else:
-            windowManager.setMinimumSize(QSize(0, 0))
+            windowManager.setMinimumSize(self.windowSize)
             windowManager.setMaximumSize(QSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX))
 
             windowManager.resize(self.windowSize)

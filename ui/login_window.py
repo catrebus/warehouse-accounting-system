@@ -24,6 +24,7 @@ class LoginWindow(BaseWindow):
     def __init__(self):
         super().__init__()
         # Инициализация пользовательского интерфейса
+
         self.init_ui()
 
     def init_ui(self):
@@ -59,6 +60,7 @@ class LoginWindow(BaseWindow):
         self.togglePasswordButton.setIcon(QIcon('assets/icons/closed_eye_icon.png'))
         self.togglePasswordButton.setFixedWidth(45)
         self.togglePasswordButton.clicked.connect(self.toggle_password_visibility)
+        self.togglePasswordButton.setCursor(Qt.CursorShape.PointingHandCursor)
 
         # Лэйаут для поля пароля и кнопки показать/скрыть
         passwordLine = QHBoxLayout()
@@ -71,12 +73,14 @@ class LoginWindow(BaseWindow):
         handleLoginButton.setObjectName('handleLoginButton')
         handleLoginButton.clicked.connect(self.handle_switch_to_main)
         handleLoginButton.setFixedWidth(300)
+        handleLoginButton.setCursor(Qt.CursorShape.PointingHandCursor)
 
         # Кнопка регистрация
         switchToRegister = QPushButton('Регистрация')
         switchToRegister.setObjectName('switchToRegister')
         switchToRegister.clicked.connect(self.handle_switch_to_register)
         switchToRegister.setFixedSize(90, 20)
+        switchToRegister.setCursor(Qt.CursorShape.PointingHandCursor)
 
         # Подложка для формы авторизации
         self.card = QFrame()

@@ -75,12 +75,14 @@ class RegisterWindow(BaseWindow):
         handleRegisterButton.setObjectName('handleRegisterButton')
         handleRegisterButton.clicked.connect(self.handle_switch_to_main)
         handleRegisterButton.setFixedWidth(300)
+        handleRegisterButton.setCursor(Qt.CursorShape.PointingHandCursor)
 
         # Кнопка перехода на окно авторизации
         swithToLogin = QPushButton('Вход')
         swithToLogin.setObjectName('switchToLoginButton')
         swithToLogin.clicked.connect(self.handle_switch_to_login)
         swithToLogin.setFixedSize(33, 20)
+        swithToLogin.setCursor(Qt.CursorShape.PointingHandCursor)
 
         # Подложка для формы регистрации
         self.card = QFrame()
@@ -164,8 +166,8 @@ class RegisterWindow(BaseWindow):
             return None
 
         # Проврка количества символов в логине
-        if len(self.usernameInput.text()) < 4 or len(self.passwordInput.text()) > 20:
-            QMessageBox.warning(self, 'Ошибка', 'Логин должен содержать от 4 до 20 символов')
+        if len(self.usernameInput.text()) < 4 or len(self.usernameInput.text()) > 255:
+            QMessageBox.warning(self, 'Ошибка', 'Логин должен содержать от 4 до 255 символов')
             return None
 
         # Валидация пароля

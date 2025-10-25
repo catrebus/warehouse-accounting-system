@@ -1,0 +1,44 @@
+#btnScrollArea {
+    background-color: #8A2BE2;
+    border: none;
+
+}
+
+#btnContainer {
+    background-color: #8A2BE2;
+    border: none;
+}
+
+#navHeader {
+    font-size: 20px;
+    font-weight: bold;
+    padding: 10px;
+}
+
+#navPanelExitButton {
+    background-color: transparent;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 12px;
+    font-weight:bold;
+    font-size: 20px;
+}
+
+#navButton {
+    background-color: white;
+}
+
+#navButton:hover {
+    background-color: #DCDCDC;
+}
+
+#btnHeader {
+    background: transparent;
+    color: #000000;
+    font-weight:bold;
+}
+
+#content{
+    font-size:100px;
+}

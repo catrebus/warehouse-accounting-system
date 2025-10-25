@@ -1,9 +1,9 @@
 import os
 import sys
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QFontDatabase, QFont
-from PyQt6.QtWidgets import QApplication, QStackedWidget
+from PyQt6.QtWidgets import QApplication, QStackedWidget, QMainWindow, QWIDGETSIZE_MAX
 
 from ui.login_window import LoginWindow
 from ui.main_window import MainWindow
@@ -17,6 +17,7 @@ def load_stylesheets(*files):
         with open(file, 'r', encoding='utf-8') as f:
             content+=f.read() + '\n'
     return content
+
 
 # Загрузка основного шрифта приложения
 def load_font():
@@ -42,8 +43,9 @@ def load_font():
             return name
     return None
 
+
 # Контроль всех окон приложения
-class WindowManager(QStackedWidget):
+class FixedWindowManager(QStackedWidget):
     def __init__(self):
         super().__init__()
 
@@ -60,8 +62,8 @@ class WindowManager(QStackedWidget):
         # Подключение сигналов
         self.loginWindow.switchToRegister.connect(lambda: self.show_register(self.registerWindow))
         self.registerWindow.switchToLogin.connect(lambda: self.show_login(self.loginWindow))
-        self.loginWindow.switchToMain.connect(lambda: self.show_main(self.mainWindow))
-        self.registerWindow.switchToMain.connect(lambda: self.show_main(self.mainWindow))
+        self.loginWindow.switchToMain.connect(self.show_main)
+        self.registerWindow.switchToMain.connect(self.show_main)
 
         # Установка начального окна
         self.show_login(self.loginWindow)
@@ -75,11 +77,24 @@ class WindowManager(QStackedWidget):
         window.apply_window_properties(self)
         self.setCurrentWidget(self.registerWindow)
 
+    def show_main(self):
+        self.hide()
+        secondWindowManager.show()
+
+
+class ResizableWindowManager(QStackedWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.mainWindow = MainWindow()
+
+        self.addWidget(self.mainWindow)
+
+        self.show_main(self.mainWindow)
+
     def show_main(self, window):
         window.apply_window_properties(self)
         self.setCurrentWidget(self.mainWindow)
-
-
 
 
 if __name__ == "__main__":
@@ -92,10 +107,13 @@ if __name__ == "__main__":
         app.setFont(QFont(font_name, 14))
 
     # Применение стилей
-    app.setStyleSheet(load_stylesheets('styles/login.qss'))
+    app.setStyleSheet(load_stylesheets('styles/login.qss', 'styles/navigation_panel.qss'))
 
-    # Создание и активация менеджера окон
-    windowManager = WindowManager()
+    # Создание менеджеров окон
+    windowManager = FixedWindowManager()
+    secondWindowManager = ResizableWindowManager()
+
+    # Активация менеджера окон
     windowManager.show()
 
     sys.exit(app.exec())

@@ -1,5 +1,5 @@
 QWidget#bgWidget {
-    background-color: #202020
+    background-color: #202020;
 }
 
 #cardLogin, #cardRegister {
