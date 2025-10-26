@@ -1,8 +1,9 @@
 from PyQt6.QtCore import QSize, Qt
-from PyQt6.QtWidgets import QHBoxLayout, QLabel, QWidget, QWIDGETSIZE_MAX, QVBoxLayout, QStackedLayout
+from PyQt6.QtWidgets import QLabel, QWidget, QWIDGETSIZE_MAX, QVBoxLayout, QStackedLayout
 
 from ui.base_window import BaseWindow
 from ui.nav_panel import NavPanel
+from utils.app_state import AppState
 
 
 class MainWindow(BaseWindow):
@@ -13,8 +14,9 @@ class MainWindow(BaseWindow):
     resizable: bool = True
     windowIconPath: str = 'assets/icons/app_icon.png'
 
-    def __init__(self):
+    def __init__(self, user):
         super().__init__()
+        self.user = user
         # Инициализация пользовательского интерфейса
         self.init_ui()
 
@@ -36,16 +38,30 @@ class MainWindow(BaseWindow):
         """Контент страницы"""
         contentWidget = QWidget()
         contentLayout = QVBoxLayout(contentWidget)
+        contentLayout.setContentsMargins(80,10,0,10)
+        contentLayout.setSpacing(0)
 
-        contentLabel = QLabel("Контент")
-        contentLabel.setObjectName("content")
-        contentLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        contentLayout.addWidget(contentLabel)
+
+        # Заголовок
+        titleLabel = QLabel("Главная страница")
+        titleLabel.setFixedHeight(40)
+        titleLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        contentLayout.addWidget(titleLabel, alignment=Qt.AlignmentFlag.AlignTop)
+
+        # Привествие
+        hiLabel = QLabel(f'Добро пожаловать, {self.user.login}')
+        hiLabel.setFixedHeight(40)
+        hiLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        contentLayout.addWidget(hiLabel, alignment=Qt.AlignmentFlag.AlignTop)
+
+        contentLayout.addStretch()
         mainLayout.addWidget(contentWidget)
-
 
         """Навигационная панель"""
         self.navPanel = NavPanel(self)
         mainLayout.addWidget(self.navPanel)
 
+
         self.setLayout(mainLayout)
+
+        print(self.user.login, self.user.role)

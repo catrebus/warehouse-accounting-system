@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import QApplication, QStackedWidget, QMainWindow, QWIDGETSI
 from ui.login_window import LoginWindow
 from ui.main_window import MainWindow
 from ui.register_window import RegisterWindow
+from utils.app_state import AppState
 
 
 # Загрузка стилей
@@ -52,12 +53,12 @@ class FixedWindowManager(QStackedWidget):
         # Создание окон
         self.loginWindow = LoginWindow()
         self.registerWindow = RegisterWindow()
-        self.mainWindow = MainWindow()
+
 
         # Добавление окон в менеджер
         self.addWidget(self.loginWindow)
         self.addWidget(self.registerWindow)
-        self.addWidget(self.mainWindow)
+
 
         # Подключение сигналов
         self.loginWindow.switchToRegister.connect(lambda: self.show_register(self.registerWindow))
@@ -79,6 +80,7 @@ class FixedWindowManager(QStackedWidget):
 
     def show_main(self):
         self.hide()
+        secondWindowManager.show_main(AppState.currentUser)
         secondWindowManager.show()
 
 
@@ -86,14 +88,15 @@ class ResizableWindowManager(QStackedWidget):
     def __init__(self):
         super().__init__()
 
-        self.mainWindow = MainWindow()
+        self.userRole = None
 
+        self.mainWindow = None
+
+    def show_main(self, user):
+        self.userRole = user.role
+        self.mainWindow = MainWindow(user)
         self.addWidget(self.mainWindow)
-
-        self.show_main(self.mainWindow)
-
-    def show_main(self, window):
-        window.apply_window_properties(self)
+        self.mainWindow.apply_window_properties(self)
         self.setCurrentWidget(self.mainWindow)
 
 
