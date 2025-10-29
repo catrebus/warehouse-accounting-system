@@ -2,14 +2,13 @@ from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtWidgets import QLabel, QWidget, QWIDGETSIZE_MAX, QVBoxLayout, QStackedLayout
 
 from ui.base_window import BaseWindow
-from ui.nav_panel import NavPanel
-from utils.app_state import AppState
+from ui.main_windows.nav_panel import NavPanel
 
 
-class MainWindow(BaseWindow):
+class TransfersWindow(BaseWindow):
 
     # Характеристики окна
-    widowTitle: str = 'Система складского учета - Главная страница'
+    widowTitle: str = 'Система складского учета - Перемещения'
     windowSize: QSize = QSize(960, 540)
     resizable: bool = True
     windowIconPath: str = 'assets/icons/app_icon.png'
@@ -43,12 +42,12 @@ class MainWindow(BaseWindow):
 
 
         # Заголовок
-        titleLabel = QLabel("Главная страница")
+        titleLabel = QLabel("Перемещения")
         titleLabel.setFixedHeight(40)
         titleLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         contentLayout.addWidget(titleLabel, alignment=Qt.AlignmentFlag.AlignTop)
 
-        # Привествие
+        # Приветствие
         hiLabel = QLabel(f'Добро пожаловать, {self.user.login}')
         hiLabel.setFixedHeight(40)
         hiLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -63,5 +62,3 @@ class MainWindow(BaseWindow):
 
 
         self.setLayout(mainLayout)
-
-        print(self.user.login, self.user.role)

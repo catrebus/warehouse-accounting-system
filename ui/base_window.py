@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QSize, Qt
+from PyQt6.QtCore import QSize
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QWidget, QWIDGETSIZE_MAX, QSizePolicy
 
@@ -19,8 +19,6 @@ class BaseWindow(QWidget):
         else:
             windowManager.setMinimumSize(self.windowSize)
             windowManager.setMaximumSize(QSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX))
-
-            windowManager.resize(self.windowSize)
 
             windowManager.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 

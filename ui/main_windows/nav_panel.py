@@ -1,6 +1,8 @@
-from PyQt6.QtCore import Qt, QEasingCurve, QPropertyAnimation
-from PyQt6.QtWidgets import QFrame, QVBoxLayout, QLabel, QWidget, QScrollArea, QPushButton
+from PyQt6.QtCore import Qt, QEasingCurve, QPropertyAnimation, pyqtSignal
+from PyQt6.QtGui import QPixmap
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QLabel, QWidget, QScrollArea, QPushButton, QHBoxLayout
 
+from utils.app_state import AppState
 
 
 class AnimatedNavButton(QPushButton):
@@ -20,26 +22,45 @@ class AnimatedNavButton(QPushButton):
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
         # Главный layout
-        mainLayout = QVBoxLayout()
+        mainLayout = QHBoxLayout()
         mainLayout.setContentsMargins(5, 5, 5, 5)
         mainLayout.setSpacing(5)
+
+        # Иконка кнопки
+        iconLabel = QLabel()
+        iconLabel.setStyleSheet('background: transparent;')
+        iconLabel.setFixedSize(50,30)
+        icon = QPixmap(iconPath)
+        icon = icon.scaled(30, 30, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        iconLabel.setPixmap(icon)
+        iconLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        mainLayout.addWidget(iconLabel)
+        mainLayout.addSpacing(40)
 
         # Заголовок кнопки
         header = QLabel(self.text)
         header.setObjectName('btnHeader')
         header.setStyleSheet("background:transparent;")
-        header.setAlignment(Qt.AlignmentFlag.AlignCenter)
         mainLayout.addWidget(header)
 
         self.setLayout(mainLayout)
 
 
 class NavPanel(QFrame):
+
+    # Сигналы для кнопок
+    switchToMainPage = pyqtSignal()
+    switchToInventory = pyqtSignal()
+    switchToShipments = pyqtSignal()
+    switchToTransfers = pyqtSignal()
+    switchToUserControls = pyqtSignal()
+
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setStyleSheet("""
             QFrame {
-                background-color: #8A2BE2;
+                background-color: #808080;
                 border: none;
             }
         """)
@@ -98,24 +119,23 @@ class NavPanel(QFrame):
 
         # Данные для кнопок
         buttonsData = [
-            ('assets/icons/app_icon.png', 'Тест 1', 'Описание 1'),
-            ('assets/icons/app_icon.png', 'Тест 2', 'Описание 2'),
-            ('assets/icons/app_icon.png', 'Тест 3', 'Описание 3'),
-            ('assets/icons/app_icon.png', 'Тест 4', 'Описание 4'),
-            ('assets/icons/app_icon.png', 'Тест 5', 'Описание 5'),
-            ('assets/icons/app_icon.png', 'Тест 6', 'Описание 6'),
-            ('assets/icons/app_icon.png', 'Тест 7', 'Описание 7'),
+            ('assets/icons/main_page.png', 'Главная страница', 'Описание 1', self.switchToMainPage, [1,2,3,4]),
+            ('assets/icons/inventory_page.png', 'Хранилище', 'Описание 2', self.switchToInventory, [1,2,3,4]),
+            ('assets/icons/shipments_page.png', 'Поставки', 'Описание 3', self.switchToShipments, [1,2,3,4]),
+            ('assets/icons/transfers_page.png', 'Перемещения', 'Описание 4', self.switchToTransfers, [1,2,3,4]),
+            ('assets/icons/user_controls_page.png', 'Контроль учетных \nзаписей', 'Описание 5', self.switchToUserControls, [1]),
         ]
 
         # Стек кнопок
         self.navButtons = []
 
         # Создание и добавление кнопок
-        for icon, text, desc in buttonsData:
-            btn = AnimatedNavButton(icon, text, desc)
-            btn.clicked.connect(self.handle_navbutton_clicked)
-            self.btnLayout.addWidget(btn)
-            self.navButtons.append(btn)
+        for icon, text, desc, signal, roles in buttonsData:
+            if AppState.currentUser.role in roles:
+                btn = AnimatedNavButton(icon, text, desc)
+                btn.clicked.connect(signal)
+                self.btnLayout.addWidget(btn)
+                self.navButtons.append(btn)
         self.btnLayout.addStretch()
 
         # Кнопка выхода

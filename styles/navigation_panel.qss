@@ -1,11 +1,11 @@
 #btnScrollArea {
-    background-color: #8A2BE2;
+    background-color: #808080;
     border: none;
 
 }
 
 #btnContainer {
-    background-color: #8A2BE2;
+    background-color: #808080;
     border: none;
 }
 
@@ -26,19 +26,23 @@
 }
 
 #navButton {
-    background-color: white;
+    background-color: #C0C0C0;
 }
 
 #navButton:hover {
     background-color: #DCDCDC;
 }
 
+#navButton:pressed {
+    padding-top: 20px;
+    padding-bottom:20px;
+}
+
 #btnHeader {
     background: transparent;
     color: #000000;
-    font-weight:bold;
 }
 
-#content{
-    font-size:100px;
+#btnIconLabel {
+    background: transparent;
 }
