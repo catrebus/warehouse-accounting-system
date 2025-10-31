@@ -216,6 +216,7 @@ class UserAccount(Base):
     password: Mapped[str] = mapped_column(String(255), nullable=False)
     employee_id: Mapped[int] = mapped_column(Integer, nullable=False)
     role_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    is_active: Mapped[int] = mapped_column(TINYINT, nullable=False)
 
     employee: Mapped['Employee'] = relationship('Employee', back_populates='user_account')
     role: Mapped['Role'] = relationship('Role', back_populates='user_account')

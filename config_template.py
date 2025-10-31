@@ -5,3 +5,5 @@ DB_PORT = "your_db_port"
 DB_NAME = "your_db_name"
 
 DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+
+

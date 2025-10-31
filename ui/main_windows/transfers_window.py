@@ -2,7 +2,7 @@ from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtWidgets import QLabel, QWidget, QWIDGETSIZE_MAX, QVBoxLayout, QStackedLayout
 
 from ui.base_window import BaseWindow
-from ui.main_windows.nav_panel import NavPanel
+from ui.ui_elements.nav_panel import NavPanel
 
 
 class TransfersWindow(BaseWindow):
