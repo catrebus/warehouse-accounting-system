@@ -1,7 +1,7 @@
 from sqlalchemy import select
 
 from db.db_session import get_db_session
-from db.models import UserAccount, Role, Employee
+from db.models import UserAccount, Role, Employee, Post
 
 
 def get_user_by_login(login:str):
@@ -31,6 +31,13 @@ def update_user(login:str, newRole:str, newIsActive:bool):
 
         return True
 
-
+def get_employees():
+    with get_db_session() as session:
+        stmt = select(Employee.id, Employee.first_name, Employee.last_name, Employee.passport_series, Employee.passport_number,Employee.phone_number, Post.name, Employee.date_of_employment, Employee.is_active).join(Post, Post.id == Employee.post_id)
+        employees = session.execute(stmt)
+        res = []
+        for id, firstName, lastName, series, number,phone, post, date, isActive in employees:
+            res.append([id, firstName, lastName, series, number,phone, post, str(date.day) + '.' + str(date.month) + '.' + str(date.year), isActive])
+        return res
 
 
