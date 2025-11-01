@@ -1,7 +1,9 @@
+from datetime import date
+
 from sqlalchemy import select
 
 from db.db_session import get_db_session
-from db.models import UserAccount, Role, Employee, Post
+from db.models import UserAccount, Role, Employee, Post, t_employee_warehouse, Warehouse
 
 
 def get_user_by_login(login:str):
@@ -40,4 +42,25 @@ def get_employees():
             res.append([id, firstName, lastName, series, number,phone, post, str(date.day) + '.' + str(date.month) + '.' + str(date.year), isActive])
         return res
 
+def add_employee(firstName:str, lastName:str, passportSeries:str, passportNumber:str, phoneNumber:str, post:str, warehouses:list):
+    with get_db_session() as session:
+
+        stmt = select(Employee.passport_series, Employee.passport_number).where(Employee.passport_series==passportSeries).where(Employee.passport_number==passportNumber)
+        serNumIndex = session.scalar(stmt)
+
+        if serNumIndex:
+            return {'success':False,'message':'Человек с такой серией и номером паспорта уже существует'}
+
+        stmt = select(Post.id).where(Post.name == post)
+        postId = session.execute(stmt).one_or_none()
+
+        newEmployee = Employee(first_name=firstName, last_name=lastName, passport_series=passportSeries, passport_number=passportNumber, phone_number=phoneNumber, post_id=postId[0], date_of_employment=date.today(), is_active=1)
+
+        warehouseObjects = session.query(Warehouse).filter(Warehouse.id.in_(warehouses)).all()
+
+        newEmployee.warehouse.extend(warehouseObjects)
+
+        session.add(newEmployee)
+
+        return {'success':True, 'message':'Пользователь успешно добавлен'}
 

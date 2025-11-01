@@ -1,6 +1,6 @@
 import datetime
 
-from sqlalchemy import CHAR, Column, Date, DateTime, ForeignKeyConstraint, Index, Integer, String, Table
+from sqlalchemy import CHAR, Column, Date, DateTime, ForeignKeyConstraint, Index, Integer, String, Table, Boolean
 from sqlalchemy.dialects.mysql import TINYINT
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -96,6 +96,7 @@ class Employee(Base):
     phone_number: Mapped[str] = mapped_column(String(20), nullable=False)
     post_id: Mapped[int] = mapped_column(Integer, nullable=False)
     date_of_employment: Mapped[datetime.date] = mapped_column(Date, nullable=False)
+    is_active: Mapped[int] = mapped_column(TINYINT, nullable=False)
 
     post: Mapped['Post'] = relationship('Post', back_populates='employee')
     warehouse: Mapped[list['Warehouse']] = relationship('Warehouse', secondary='employee_warehouse', back_populates='employee')

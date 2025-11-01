@@ -3,7 +3,7 @@ from datetime import date
 from sqlalchemy import select
 
 from db.db_session import get_db_session
-from db.models import Shipment, Supplier, Employee, Warehouse, UserAccount, Role
+from db.models import Shipment, Supplier, Employee, Warehouse, UserAccount, Role, Post
 
 
 def get_upcoming_shipments():
@@ -43,7 +43,17 @@ def get_roles():
 
         return roles
 
+def get_posts():
+    with get_db_session() as session:
+        stmt = select(Post.name)
+        posts = session.scalars(stmt).all()
 
+        return posts
 
+def get_warehouses():
+    with get_db_session() as session:
+        stmt = select(Warehouse.id, Warehouse.name)
+        warehouses = session.execute(stmt).all()
 
+        return warehouses
 
