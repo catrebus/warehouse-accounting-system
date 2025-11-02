@@ -3,7 +3,7 @@ from datetime import date
 from sqlalchemy import select, delete, insert
 
 from db.db_session import get_db_session
-from db.models import UserAccount, Role, Employee, Post, t_employee_warehouse, Warehouse
+from db.models import UserAccount, Role, Employee, Post, t_employee_warehouse, Warehouse, InviteCode
 
 
 def get_user_by_login(login:str):
@@ -84,16 +84,16 @@ def get_employee_by_id(id:int):
 
         return {'success':True, 'data':data}
 
-def update_employee(employeeID:int, firstName:str, lastName:str, passportSeries:str, passportNumber:str, phoneNumber:str, post:str, isActive:int, warehouses:list):
+def update_employee(employeeId:int, firstName:str, lastName:str, passportSeries:str, passportNumber:str, phoneNumber:str, post:str, isActive:int, warehouses:list):
     with get_db_session() as session:
         # Проверка на существование серии и номера паспорта в бд, исключая обновляемого сотрудника
-        stmt = select(Employee).where(Employee.passport_series==passportSeries, Employee.passport_number==passportNumber,Employee.id!=employeeID)
+        stmt = select(Employee).where(Employee.passport_series == passportSeries, Employee.passport_number == passportNumber, Employee.id != employeeId)
         serNumIndex = session.execute(stmt).first()
         if serNumIndex:
             return {'success': False, 'message': 'Человек с таким паспортом уже существует'}
 
         # Обновление полей
-        employee = session.get(Employee, employeeID)
+        employee = session.get(Employee, employeeId)
 
         employee.first_name = firstName
         employee.last_name = lastName
@@ -104,14 +104,47 @@ def update_employee(employeeID:int, firstName:str, lastName:str, passportSeries:
         employee.is_active = isActive
 
         # Удаление старых связей со складами
-        session.execute(delete(t_employee_warehouse).where(t_employee_warehouse.c.employee_id==employeeID))
+        session.execute(delete(t_employee_warehouse).where(t_employee_warehouse.c.employee_id == employeeId))
 
         # Добавление новых связей
         if warehouses:
-            rows = [{'employee_id': employeeID, "warehouse_id": warehouseId} for warehouseId in warehouses]
+            rows = [{'employee_id': employeeId, "warehouse_id": warehouseId} for warehouseId in warehouses]
             session.execute(insert(t_employee_warehouse), rows)
 
         return {'success': True, 'message': 'Информация о сотруднике успешно обновлена'}
+
+def create_invite_code(code:str, employeeId: int, role: str):
+    with get_db_session() as session:
+        # Проверка на дубли
+        stmt = select(InviteCode).where(InviteCode.code == code)
+        isDoubled = session.execute(stmt).first()
+        if isDoubled:
+            return {'success': False, 'message':'Такой код уже когда-то был создан'}
+
+        # Проверка существует ли сотрудник
+        stmt = select(Employee).where(Employee.id == employeeId)
+        isEmployeeExists = session.execute(stmt).first()
+        if not isEmployeeExists:
+            return {'success': False, 'message': 'Сотрудника с таким id не существует'}
+
+        # Проверка не существует ли пригласительного кода для сотрудника
+        stmt = select(InviteCode).where(InviteCode.employee_id == employeeId)
+        isAlreadyExists = session.execute(stmt).first()
+        if isAlreadyExists:
+            return {'success': False, 'message': 'Пригласительный код для данного сотрудника уже был создан'}
+
+        # Добавление кода в систему
+
+        newCode = InviteCode(code=code,
+                             employee_id=employeeId,
+                             role_id=session.scalar(select(Role.id).where(Role.name == role)),
+                             is_active=1)
+        session.add(newCode)
+
+        return {'success': True, 'message': f'Пригласительный код "{newCode.code}" успешно создан'}
+
+
+
 
 
 

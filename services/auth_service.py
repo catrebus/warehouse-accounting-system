@@ -31,7 +31,8 @@ def register_user(inviteCode: str, login: str, password: str) -> dict:
         newUser = UserAccount(login=login,
                                password=hashedPassword,
                                employee_id=inviteCodeObj.employee_id,
-                               role_id=inviteCodeObj.role_id)
+                               role_id=inviteCodeObj.role_id,
+                              is_active=1)
         session.add(newUser)
 
         # Деактивация пригласительного кода

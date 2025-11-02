@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QLabel, QWidget, QWIDGETSIZE_MAX, QVBoxLayout, QStac
     QAbstractItemView, QListWidgetItem
 
 from services.control_user_service import get_user_by_login, update_user, get_employees, add_employee, \
-    get_employee_by_id, update_employee
+    get_employee_by_id, update_employee, create_invite_code
 from services.info_from_db import get_users, get_roles, get_posts, get_warehouses
 from ui.base_window import BaseWindow
 from ui.ui_elements.nav_panel import NavPanel
@@ -101,6 +101,10 @@ class ManageUserWindow(QDialog):
         self.setFixedSize(QSize(480,270))
 
         self.mainLayout = QVBoxLayout()
+        self.label = QLabel('Управление учетной записью')
+        self.mainLayout.addWidget(self.label, alignment=Qt.AlignmentFlag.AlignCenter)
+        self.mainLayout.addSpacing(10)
+
 
         # Layout для взаимодействия с учетной записью
         self.userLayout = QVBoxLayout()
@@ -141,9 +145,7 @@ class ManageUserWindow(QDialog):
         self.userLogin.deleteLater()
         self.confirmLogin.deleteLater()
 
-        label = QLabel(f"Управление учетной записью: {self.user['login']}")
-        self.userLayout.addWidget(label, alignment=Qt.AlignmentFlag.AlignCenter)
-        self.userLayout.addSpacing(10)
+        self.label.setText(f"Управление учетной записью: {self.user['login']}")
 
         self.userLayout.addWidget(QLabel(f"Фамилия сотрудника: {self.user['lastName']}"))
         self.userLayout.addWidget(QLabel(f"Имя сотрудника: {self.user['firstName']}"))
@@ -185,6 +187,7 @@ class ManageUserWindow(QDialog):
         newIsActive = self.isActive.isChecked()
 
         update_user(self.user['login'], newRole, newIsActive)
+        QMessageBox.information(self, 'Успех', 'Учетная запись успешно обновлена')
         return None
 
 class ManageEmployeeWindow(QDialog):
@@ -611,6 +614,102 @@ class AddEmployeeWindow(QDialog):
             QMessageBox.information(self, 'Ошибка', result['message'])
             return None
 
+class CreateInviteCodeWindow(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Добавление сотрудника")
+        self.setWindowIcon(QIcon("assets/icons/app_icon.png"))
+        self.setFixedSize(QSize(500, 200))
+
+        mainLayout = QVBoxLayout()
+
+        label = QLabel('Создание пригласительного кода')
+        mainLayout.addWidget(label, alignment=Qt.AlignmentFlag.AlignCenter)
+        mainLayout.addSpacing(10)
+
+        fieldsLayout = QVBoxLayout()
+
+        # Поле id сотрудника
+        employeeIdLayout = QHBoxLayout()
+        employeeIdLabel = QLabel('Id сотрудника: ')
+        employeeIdLabel.setFixedWidth(150)
+        self.employeeIdLine = QLineEdit()
+        self.employeeIdLine.setPlaceholderText('Id сотрудника')
+        self.employeeIdLine.setValidator(QRegularExpressionValidator(QRegularExpression(r'^\d*$')))
+        employeeIdLayout.addWidget(employeeIdLabel)
+        employeeIdLayout.addWidget(self.employeeIdLine)
+
+        # Поле кода
+        codeLayout = QHBoxLayout()
+        codeLabel = QLabel('Текст кода: ')
+        codeLabel.setFixedWidth(150)
+        self.codeLine = QLineEdit()
+        self.codeLine.setPlaceholderText('Пригласительный код')
+        self.codeLine.setValidator(QRegularExpressionValidator(QRegularExpression(r'^[A-Za-z0-9]*$')))
+        self.codeLine.setMaxLength(50)
+        codeLayout.addWidget(codeLabel)
+        codeLayout.addWidget(self.codeLine)
+
+        # Роль для будущей учетной записи
+        roleLayout = QHBoxLayout()
+        roleLabel = QLabel('Роль: ')
+        roleLabel.setFixedWidth(150)
+        self.roleBox = QComboBox()
+        self.roleBox.addItem("Выберите роль пользователя")
+        self.roleBox.addItems(get_roles())
+        roleLayout.addWidget(roleLabel)
+        roleLayout.addWidget(self.roleBox)
+
+        # Позиционирование полей
+        fieldsLayout.addLayout(employeeIdLayout)
+        fieldsLayout.addLayout(codeLayout)
+        fieldsLayout.addLayout(roleLayout)
+
+        mainLayout.addLayout(fieldsLayout)
+        mainLayout.addStretch()
+
+        # Кнопки
+        btnLayout = QHBoxLayout()
+
+        exitBtn = QPushButton("Выход")
+        exitBtn.setFixedSize(200, 40)
+        exitBtn.clicked.connect(self.close)
+        btnLayout.addWidget(exitBtn)
+
+        addEmployeeBtn = QPushButton("Добавить")
+        addEmployeeBtn.setFixedSize(200, 40)
+        addEmployeeBtn.clicked.connect(self.create_invite_code)
+        btnLayout.addWidget(addEmployeeBtn)
+
+        mainLayout.addLayout(btnLayout)
+
+        self.setLayout(mainLayout)
+
+    def create_invite_code(self):
+        if not self.employeeIdLine.text().strip():
+            QMessageBox.warning(self, 'Ошибка', 'Введите id пользователя')
+            return None
+        employeeId = int(self.employeeIdLine.text().strip())
+
+        if len(self.codeLine.text().strip()) < 5:
+            QMessageBox.warning(self, 'Ошибка', 'Текст кода должен содержать хотя бы 5 символов')
+            return None
+        code = self.codeLine.text().strip()
+
+        if self.roleBox.currentIndex() == 0:
+            QMessageBox.warning(self, 'Ошибка', 'Выберите роль будущей учетной записи')
+            return None
+        role = self.roleBox.currentText()
+
+        result = create_invite_code(code,employeeId,role)
+        if result['success']:
+            QMessageBox.information(self,'Успех', result['message'])
+            return None
+        else:
+            QMessageBox.warning(self, 'Ошибка', result['message'])
+            return None
+
 class UserControlsWindow(BaseWindow):
 
     # Характеристики окна
@@ -649,6 +748,7 @@ class UserControlsWindow(BaseWindow):
         scrollArea = QScrollArea()
         scrollArea.setWidgetResizable(True)
         scrollArea.setWidget(contentWidget)
+        scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         # Заголовок страницы
         titleLabel = QLabel("Контроль учетных записей")
@@ -695,8 +795,6 @@ class UserControlsWindow(BaseWindow):
 
         # Элементы для фильтрации
         employeesFilterFields = QVBoxLayout()
-
-
 
         self.loginFilter = QLineEdit()
         self.loginFilter.setFixedSize(620, 30)
@@ -761,11 +859,11 @@ class UserControlsWindow(BaseWindow):
         infoLayout.addLayout(usersLayout)
 
         # Сотрудники
-        inviteCodeLayout = QVBoxLayout()
+        employeeLayout = QVBoxLayout()
 
         employeesLabel = QLabel("Сотрудники")
-        inviteCodeLayout.addWidget(employeesLabel, alignment=Qt.AlignmentFlag.AlignCenter)
-        inviteCodeLayout.addSpacing(5)
+        employeeLayout.addWidget(employeesLabel, alignment=Qt.AlignmentFlag.AlignCenter)
+        employeeLayout.addSpacing(5)
 
         employeeHeaders = ["id", "Имя", "Фамилия", "Серия\nпаспорта", "Номер\nпаспорта", "Телефон", "Должность", "Дата", "Работает"]
         employeesData = get_employees()
@@ -784,7 +882,7 @@ class UserControlsWindow(BaseWindow):
         employeesTable.setSelectionBehavior(employeesTable.SelectionBehavior.SelectRows)
         employeesTable.setFixedSize(800, 200)
         employeesTable.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        inviteCodeLayout.addWidget(employeesTable, alignment=Qt.AlignmentFlag.AlignCenter)
+        employeeLayout.addWidget(employeesTable, alignment=Qt.AlignmentFlag.AlignCenter)
 
         # Элементы для фильтрации сотрудников
         employeesFilterFields = QVBoxLayout()
@@ -828,20 +926,35 @@ class UserControlsWindow(BaseWindow):
         employeesFilterButtons.addWidget(employeeTurnOffActiveFilter, alignment=Qt.AlignmentFlag.AlignCenter)
         employeesFilterButtons.addStretch()
 
-        inviteCodeLayout.addLayout(employeesFilterButtons)
-        inviteCodeLayout.addLayout(employeesFilterFields)
+        employeeLayout.addLayout(employeesFilterButtons)
+        employeeLayout.addLayout(employeesFilterFields)
 
         # Добавление сотрудника
         addEmployeeButton = QPushButton("Добавить сотрудника")
         addEmployeeButton.setFixedSize(620, 30)
         addEmployeeButton.clicked.connect(self.add_employee)
-        inviteCodeLayout.addWidget(addEmployeeButton, alignment=Qt.AlignmentFlag.AlignCenter)
+        employeeLayout.addWidget(addEmployeeButton, alignment=Qt.AlignmentFlag.AlignCenter)
 
         # Редактирование сотрудника
         manageEmployeeButton = QPushButton("Изменить запись о сотруднике")
         manageEmployeeButton.setFixedSize(620, 30)
         manageEmployeeButton.clicked.connect(self.manage_employee)
-        inviteCodeLayout.addWidget(manageEmployeeButton, alignment=Qt.AlignmentFlag.AlignCenter)
+        employeeLayout.addWidget(manageEmployeeButton, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        employeeLayout.addSpacing(40)
+
+        infoLayout.addLayout(employeeLayout)
+
+        # Пригласительные коды
+        inviteCodeLayout = QVBoxLayout()
+        inviteCodeLabel = QLabel('Пригласительный код')
+        inviteCodeLayout.addWidget(inviteCodeLabel, alignment=Qt.AlignmentFlag.AlignCenter)
+        inviteCodeLayout.addSpacing(5)
+
+        createInviteCodeBtn = QPushButton('Создать пригласительный код')
+        createInviteCodeBtn.setFixedSize(300, 50)
+        createInviteCodeBtn.clicked.connect(self.create_invite_code)
+        inviteCodeLayout.addWidget(createInviteCodeBtn, alignment=Qt.AlignmentFlag.AlignCenter)
 
         infoLayout.addLayout(inviteCodeLayout)
         infoLayout.addStretch()
@@ -905,3 +1018,6 @@ class UserControlsWindow(BaseWindow):
         addUserWindow.exec()
         self.update_employees_table()
 
+    def create_invite_code(self):
+        createInviteCodeWindow = CreateInviteCodeWindow()
+        createInviteCodeWindow.exec()
