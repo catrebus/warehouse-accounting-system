@@ -50,6 +50,7 @@ QPushButton#togglePasswordButton:hover {
     background-color: none;
     border:none;
     text-decoration: underline;
+    color: white;
 }
 
 

@@ -4,13 +4,13 @@ from PyQt6.QtWidgets import QLabel, QWidget, QWIDGETSIZE_MAX, QVBoxLayout, QStac
     QHeaderView, QLineEdit, QComboBox, QPushButton, QDialog, QMessageBox, QCheckBox, QScrollArea, QListWidget, \
     QAbstractItemView, QListWidgetItem
 
-from services.control_user_service import get_user_by_login, update_user, get_employees, add_employee
+from services.control_user_service import get_user_by_login, update_user, get_employees, add_employee, \
+    get_employee_by_id, update_employee
 from services.info_from_db import get_users, get_roles, get_posts, get_warehouses
 from ui.base_window import BaseWindow
 from ui.ui_elements.nav_panel import NavPanel
 from ui.ui_elements.table_model import TableModel
-import faulthandler
-faulthandler.enable()
+
 
 class MultiFilterProxyModelUsers(QSortFilterProxyModel):
     """Класс прокси модели для реализации фильтров в таблице пользователей"""
@@ -178,8 +178,6 @@ class ManageUserWindow(QDialog):
         applyChangesBtn.clicked.connect(self.apply_changes)
         self.btnLayout.addWidget(applyChangesBtn)
 
-
-
         return None
 
     def apply_changes(self):
@@ -188,6 +186,241 @@ class ManageUserWindow(QDialog):
 
         update_user(self.user['login'], newRole, newIsActive)
         return None
+
+class ManageEmployeeWindow(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Изменение информации о сотруднике")
+        self.setWindowIcon(QIcon("assets/icons/app_icon.png"))
+        self.setFixedSize(QSize(500, 400))
+
+        self.mainLayout = QVBoxLayout()
+
+        self.label = QLabel('Изменение информации о сотруднике')
+        self.mainLayout.addWidget(self.label, alignment=Qt.AlignmentFlag.AlignCenter)
+        self.mainLayout.addSpacing(10)
+
+        self.employeeIdLine = QLineEdit(self)
+        self.employeeIdLine.setPlaceholderText("Id сотрудника")
+        self.employeeIdLine.setFixedWidth(300)
+        self.employeeIdLine.setValidator(QRegularExpressionValidator(QRegularExpression(r'^\d*$')))
+        self.mainLayout.addWidget(self.employeeIdLine, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        self.confirmEmployeeIdBtn = QPushButton('Изменить')
+        self.confirmEmployeeIdBtn.setFixedWidth(300)
+        self.confirmEmployeeIdBtn.clicked.connect(self.open_employee_controls)
+        self.mainLayout.addWidget(self.confirmEmployeeIdBtn, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        # Лэйаут для полей
+        self.fieldsLayout = QVBoxLayout()
+        self.fieldsLayout.setSpacing(10)
+        self.mainLayout.addLayout(self.fieldsLayout)
+
+
+        self.mainLayout.addStretch()
+
+        self.btnLayout = QHBoxLayout()
+
+        closeBtn = QPushButton("Выход")
+        closeBtn.setFixedSize(200, 40)
+        closeBtn.clicked.connect(self.close)
+        self.btnLayout.addWidget(closeBtn)
+
+        self.mainLayout.addLayout(self.btnLayout)
+
+        self.setLayout(self.mainLayout)
+
+    def open_employee_controls(self):
+        try:
+            employee = get_employee_by_id(int(self.employeeIdLine.text()))
+        except ValueError:
+            QMessageBox.warning(self, 'Ошибка', 'Некорректный id пользователя')
+            return None
+
+        if not employee['success']:
+            QMessageBox.warning(self, 'Ошибка', employee['data'])
+            return None
+
+        self.employeeData = employee['data']
+
+        self.label.setText(f'Изменение информации о сотруднике: {self.employeeData['id']}')
+        self.employeeIdLine.deleteLater()
+        self.confirmEmployeeIdBtn.deleteLater()
+
+        # Фамилия
+        lastNameLayout = QHBoxLayout()
+        lastNameLabel = QLabel("Фамилия: ")
+        lastNameLabel.setFixedWidth(150)
+        self.lastName = QLineEdit(self)
+        self.lastName.setPlaceholderText("Фамилия сотрудника")
+        self.lastName.setMaxLength(100)
+        self.lastName.setValidator(QRegularExpressionValidator(QRegularExpression(r'[A-Za-zA-Яа-яЁё]*$')))
+        self.lastName.setText(self.employeeData['lastName'])
+        lastNameLayout.addWidget(lastNameLabel)
+        lastNameLayout.addWidget(self.lastName)
+
+        # Имя
+        firstNameLayout = QHBoxLayout()
+        firstNameLabel = QLabel("Имя: ")
+        firstNameLabel.setFixedWidth(150)
+        self.firstName = QLineEdit(self)
+        self.firstName.setPlaceholderText("Имя сотрудника")
+        self.firstName.setMaxLength(50)
+        self.firstName.setValidator(QRegularExpressionValidator(QRegularExpression(r'[A-Za-zA-Яа-яЁё]*$')))
+        self.firstName.setText(self.employeeData['firstName'])
+        firstNameLayout.addWidget(firstNameLabel)
+        firstNameLayout.addWidget(self.firstName)
+
+        # Серия паспорта
+        passportSeriesLayout = QHBoxLayout()
+        passportSeriesLabel = QLabel("Серия паспорта: ")
+        passportSeriesLabel.setFixedWidth(150)
+        self.passportSeries = QLineEdit(self)
+        self.passportSeries.setPlaceholderText("Серия паспорта сотрудника")
+        self.passportSeries.setMaxLength(4)
+        self.passportSeries.setValidator(QRegularExpressionValidator(QRegularExpression(r'^\d*$')))
+        self.passportSeries.setText(self.employeeData['passportSeries'])
+        passportSeriesLayout.addWidget(passportSeriesLabel)
+        passportSeriesLayout.addWidget(self.passportSeries)
+
+        # Номер паспорта
+        passportNumberLayout = QHBoxLayout()
+        passportNumberLabel = QLabel("Номер паспорта:")
+        passportNumberLabel.setFixedWidth(150)
+        self.passportNumber = QLineEdit(self)
+        self.passportNumber.setPlaceholderText("Номер паспорта сотрудника")
+        self.passportNumber.setMaxLength(6)
+        self.passportNumber.setValidator(QRegularExpressionValidator(QRegularExpression(r'^\d*$')))
+        self.passportNumber.setText(self.employeeData['passportNumber'])
+        passportNumberLayout.addWidget(passportNumberLabel)
+        passportNumberLayout.addWidget(self.passportNumber)
+
+        # Телефон
+        phoneNumberLayout = QHBoxLayout()
+        phoneNumberLabel = QLabel("Номер телефона:")
+        phoneNumberLabel.setFixedWidth(150)
+        self.phoneNumber = QLineEdit(self)
+        self.phoneNumber.setPlaceholderText("Номер телефона сотрудника")
+        self.phoneNumber.setMaxLength(20)
+        self.phoneNumber.setValidator(QRegularExpressionValidator(QRegularExpression(r'^\d*$')))
+        self.phoneNumber.setText(self.employeeData['phoneNumber'])
+        phoneNumberLayout.addWidget(phoneNumberLabel)
+        phoneNumberLayout.addWidget(self.phoneNumber)
+
+        # Выбор должности
+        postLayout = QHBoxLayout()
+        postLabel = QLabel("Должность: ")
+        postLabel.setFixedWidth(150)
+        self.post = QComboBox(self)
+        self.post.addItems(get_posts())
+        self.post.setCurrentText(self.employeeData['post'])
+        postLayout.addWidget(postLabel)
+        postLayout.addWidget(self.post)
+
+        # Выбор складов
+        warehouseLayout = QHBoxLayout()
+        warehouseLabel = QLabel("Склады: ")
+        warehouseLabel.setFixedWidth(150)
+        self.warehouse = QListWidget(self)
+        self.warehouse.setSelectionMode(QListWidget.SelectionMode.MultiSelection)
+
+        warehouses = get_warehouses()
+        for id, name in warehouses:
+            item = QListWidgetItem(name)
+            item.setData(Qt.ItemDataRole.UserRole, id)
+            self.warehouse.addItem(item)
+
+        for i in range(self.warehouse.count()):
+            item = self.warehouse.item(i)
+            if item.data(Qt.ItemDataRole.UserRole) in self.employeeData['warehouses']:
+                item.setSelected(True)
+
+        warehouseLayout.addWidget(warehouseLabel)
+        warehouseLayout.addWidget(self.warehouse)
+
+        # Работает/уволен
+        isActiveLayout = QHBoxLayout()
+        isActiveLabel = QLabel("Работает: ")
+        isActiveLabel.setFixedWidth(150)
+        self.isActive = QCheckBox(self)
+        self.isActive.setChecked(self.employeeData['isActive'])
+        isActiveLayout.addWidget(isActiveLabel)
+        isActiveLayout.addWidget(self.isActive)
+
+        # Позиционирование полей
+        self.fieldsLayout.addLayout(lastNameLayout)
+        self.fieldsLayout.addLayout(firstNameLayout)
+        self.fieldsLayout.addLayout(passportSeriesLayout)
+        self.fieldsLayout.addLayout(passportNumberLayout)
+        self.fieldsLayout.addLayout(phoneNumberLayout)
+        self.fieldsLayout.addLayout(postLayout)
+        self.fieldsLayout.addLayout(warehouseLayout)
+        self.fieldsLayout.addLayout(isActiveLayout)
+
+        # Кнопки
+        addEmployeeBtn = QPushButton("Изменить")
+        addEmployeeBtn.setFixedSize(200, 40)
+        addEmployeeBtn.clicked.connect(self.update_employee_info)
+        self.btnLayout.addWidget(addEmployeeBtn)
+
+
+
+
+    def update_employee_info(self):
+
+        # Получение информации
+        firstName = self.firstName.text().strip()
+        lastName = self.lastName.text().strip()
+        passportSeries = self.passportSeries.text().strip()
+        passportNumber = self.passportNumber.text().strip()
+        phoneNumber = self.phoneNumber.text().strip()
+        post = self.post.currentText()
+
+        warehouses = []
+        for warehouseId in self.warehouse.selectedItems():
+            warehouses.append(warehouseId.data(Qt.ItemDataRole.UserRole))
+
+        """Валидация"""
+
+        # Фамилия
+        if len(lastName) == 0:
+            QMessageBox.warning(self, 'Ошибка', 'Поле "Фамилия" должно быть заполнено')
+            return None
+
+        # Имя
+        if len(firstName) == 0:
+            QMessageBox.warning(self, 'Ошибка', 'Поле "Имя" должно быть заполнено')
+            return None
+
+        # Серия паспорта
+        if len(passportSeries) != 4:
+            QMessageBox.warning(self, 'Ошибка', 'Серия паспорта должна содержать 4 цифры')
+            return None
+
+        # Номер паспорта
+        if len(passportNumber) != 6:
+            QMessageBox.warning(self, 'Ошибка', 'Номер паспорта должен содержать 6 цифр')
+            return None
+
+        # Номер телефона
+        if len(phoneNumber) == 0:
+            QMessageBox.warning(self, 'Ошибка', 'Поле "Номер телефона" должно быть заполнено')
+            return None
+
+        # Склады
+        if len(warehouses) == 0:
+            QMessageBox.warning(self, 'Ошибка', 'Выберите склад(ы)')
+            return None
+
+        """Изменение записи"""
+        result = update_employee(self.employeeData['id'],firstName, lastName, passportSeries, passportNumber, phoneNumber, post,int(self.isActive.isChecked()), warehouses)
+        if result['success']:
+            QMessageBox.information(self, 'Успех', result['message'])
+            return None
+        else:
+            QMessageBox.information(self, 'Ошибка', result['message'])
+            return None
+
 
 class AddEmployeeWindow(QDialog):
     def __init__(self):
@@ -369,12 +602,13 @@ class AddEmployeeWindow(QDialog):
             QMessageBox.warning(self, 'Ошибка', 'Выберите склад(ы)')
             return None
 
+        """Добавление записи"""
         result = add_employee(firstName, lastName, passportSeries, passportNumber, phoneNumber, post, warehouses)
         if result['success']:
             QMessageBox.information(self,'Успех', 'Сотрудник успешно добавлен')
             return None
         else:
-            QMessageBox.information(self, 'Ошибка', 'Ошибка в добавлении сотрудника')
+            QMessageBox.information(self, 'Ошибка', result['message'])
             return None
 
 class UserControlsWindow(BaseWindow):
@@ -533,8 +767,6 @@ class UserControlsWindow(BaseWindow):
         inviteCodeLayout.addWidget(employeesLabel, alignment=Qt.AlignmentFlag.AlignCenter)
         inviteCodeLayout.addSpacing(5)
 
-
-
         employeeHeaders = ["id", "Имя", "Фамилия", "Серия\nпаспорта", "Номер\nпаспорта", "Телефон", "Должность", "Дата", "Работает"]
         employeesData = get_employees()
         employeesModel = TableModel(employeesData, employeeHeaders)
@@ -596,15 +828,20 @@ class UserControlsWindow(BaseWindow):
         employeesFilterButtons.addWidget(employeeTurnOffActiveFilter, alignment=Qt.AlignmentFlag.AlignCenter)
         employeesFilterButtons.addStretch()
 
-
         inviteCodeLayout.addLayout(employeesFilterButtons)
         inviteCodeLayout.addLayout(employeesFilterFields)
 
-        # Добавление пользователя
+        # Добавление сотрудника
         addEmployeeButton = QPushButton("Добавить сотрудника")
         addEmployeeButton.setFixedSize(620, 30)
         addEmployeeButton.clicked.connect(self.add_employee)
         inviteCodeLayout.addWidget(addEmployeeButton, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        # Редактирование сотрудника
+        manageEmployeeButton = QPushButton("Изменить запись о сотруднике")
+        manageEmployeeButton.setFixedSize(620, 30)
+        manageEmployeeButton.clicked.connect(self.manage_employee)
+        inviteCodeLayout.addWidget(manageEmployeeButton, alignment=Qt.AlignmentFlag.AlignCenter)
 
         infoLayout.addLayout(inviteCodeLayout)
         infoLayout.addStretch()
@@ -657,6 +894,11 @@ class UserControlsWindow(BaseWindow):
         manageUserWindow = ManageUserWindow()
         manageUserWindow.exec()
         self.update_users_table()
+
+    def manage_employee(self):
+        manageEmployeeWindow = ManageEmployeeWindow()
+        manageEmployeeWindow.exec()
+        self.update_employees_table()
 
     def add_employee(self):
         addUserWindow = AddEmployeeWindow()

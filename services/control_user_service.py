@@ -1,6 +1,6 @@
 from datetime import date
 
-from sqlalchemy import select
+from sqlalchemy import select, delete, insert
 
 from db.db_session import get_db_session
 from db.models import UserAccount, Role, Employee, Post, t_employee_warehouse, Warehouse
@@ -35,7 +35,8 @@ def update_user(login:str, newRole:str, newIsActive:bool):
 
 def get_employees():
     with get_db_session() as session:
-        stmt = select(Employee.id, Employee.first_name, Employee.last_name, Employee.passport_series, Employee.passport_number,Employee.phone_number, Post.name, Employee.date_of_employment, Employee.is_active).join(Post, Post.id == Employee.post_id)
+        stmt = select(Employee.id, Employee.first_name, Employee.last_name, Employee.passport_series, Employee.passport_number,Employee.phone_number, Post.name, Employee.date_of_employment, Employee.is_active)\
+            .join(Post, Post.id == Employee.post_id)
         employees = session.execute(stmt)
         res = []
         for id, firstName, lastName, series, number,phone, post, date, isActive in employees:
@@ -63,4 +64,55 @@ def add_employee(firstName:str, lastName:str, passportSeries:str, passportNumber
         session.add(newEmployee)
 
         return {'success':True, 'message':'Пользователь успешно добавлен'}
+
+def get_employee_by_id(id:int):
+    with get_db_session() as session:
+        stmt = select(Employee.id, Employee.first_name, Employee.last_name, Employee.passport_series, Employee.passport_number,Employee.phone_number, Post.name.label('post'), Employee.date_of_employment, Employee.is_active)\
+            .join(Post, Post.id == Employee.post_id).\
+            where(Employee.id==id)
+        employeeObj = session.execute(stmt).one_or_none()
+        if not employeeObj:
+            return {'success':False, 'data': 'Сотрудник с таким id не найден'}
+
+        stmt = select(t_employee_warehouse.c.warehouse_id).where(t_employee_warehouse.c.employee_id == employeeObj.id)
+        warehouseIds = session.execute(stmt).scalars().all()
+
+
+        data = {'id':employeeObj.id ,'firstName': employeeObj.first_name, 'lastName': employeeObj.last_name,
+                'passportSeries': employeeObj.passport_series, 'passportNumber': employeeObj.passport_number,
+                'phoneNumber': employeeObj.phone_number,'post': employeeObj.post,'dateOfEmployment': employeeObj.date_of_employment, 'isActive': employeeObj.is_active, 'warehouses': warehouseIds}
+
+        return {'success':True, 'data':data}
+
+def update_employee(employeeID:int, firstName:str, lastName:str, passportSeries:str, passportNumber:str, phoneNumber:str, post:str, isActive:int, warehouses:list):
+    with get_db_session() as session:
+        # Проверка на существование серии и номера паспорта в бд, исключая обновляемого сотрудника
+        stmt = select(Employee).where(Employee.passport_series==passportSeries, Employee.passport_number==passportNumber,Employee.id!=employeeID)
+        serNumIndex = session.execute(stmt).first()
+        if serNumIndex:
+            return {'success': False, 'message': 'Человек с таким паспортом уже существует'}
+
+        # Обновление полей
+        employee = session.get(Employee, employeeID)
+
+        employee.first_name = firstName
+        employee.last_name = lastName
+        employee.passport_series = passportSeries
+        employee.passport_number = passportNumber
+        employee.phone_number = phoneNumber
+        employee.post_id = session.scalar(select(Post.id).where(Post.name == post))
+        employee.is_active = isActive
+
+        # Удаление старых связей со складами
+        session.execute(delete(t_employee_warehouse).where(t_employee_warehouse.c.employee_id==employeeID))
+
+        # Добавление новых связей
+        if warehouses:
+            rows = [{'employee_id': employeeID, "warehouse_id": warehouseId} for warehouseId in warehouses]
+            session.execute(insert(t_employee_warehouse), rows)
+
+        return {'success': True, 'message': 'Информация о сотруднике успешно обновлена'}
+
+
+
 
