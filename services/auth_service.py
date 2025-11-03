@@ -1,7 +1,7 @@
 from sqlalchemy import select
 
 from db.db_session import get_db_session
-from db.models import InviteCode, UserAccount, Employee
+from db.models import InviteCode, UserAccount, Employee, t_employee_warehouse
 from utils.password_utils import hash_password, verify_password
 from utils.app_state import AppState, User
 
@@ -37,7 +37,11 @@ def register_user(inviteCode: str, login: str, password: str) -> dict:
 
         # Деактивация пригласительного кода
         inviteCodeObj.is_active = 0
-        AppState.currentUser = User(login=newUser.login,role=newUser.role_id)
+
+        stmt = select(t_employee_warehouse.c.warehouse_id).where(t_employee_warehouse.c.employee_id == inviteCodeObj.employee_id)
+        warehouseIds = session.execute(stmt).scalars().all()
+
+        AppState.currentUser = User(login=newUser.login,role=newUser.role_id, warehouses=warehouseIds)
         return {'success': True, 'message': 'Регистрация прошла успешно'}
 
 def authorize_user(login: str, password: str) -> dict:
@@ -50,7 +54,11 @@ def authorize_user(login: str, password: str) -> dict:
         if userObj:
 
             if verify_password(password, userObj.password):
-                AppState.currentUser = User(login=userObj.login, role=userObj.role_id)
+
+                stmt = select(t_employee_warehouse.c.warehouse_id).where(t_employee_warehouse.c.employee_id == userObj.employee_id)
+                warehouseIds = session.execute(stmt).scalars().all()
+
+                AppState.currentUser = User(login=userObj.login, role=userObj.role_id, warehouses=warehouseIds)
                 return {'success': True, 'message': 'Авторизация прошла успешно'}
 
         return {'success': False, 'message': 'Неверный логин или пароль'}
