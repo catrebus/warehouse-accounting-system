@@ -105,4 +105,45 @@ def get_all_products():
         except Exception as e:
             return {'success': False, 'message':e}
 
+def get_all_product_and_ids():
+    with get_db_session() as session:
+        stmt = select(Product.id, Product.name)
+        products = session.execute(stmt).all()
+        return {'success': True, 'data': products}
 
+def add_product(productName):
+    with get_db_session() as session:
+        try:
+            stmt = select(Product.name).where(Product.name == productName)
+            isAlreadeExists = session.execute(stmt).scalar()
+            if isAlreadeExists:
+               return {'success': False, 'message': 'Товар с таким именем уже существует'}
+
+            newProduct = Product(name=productName)
+            session.add(newProduct)
+
+            return {'success': True, 'message': 'Новый товар успешно добавлен'}
+        except Exception as e:
+            return {'success': False, 'message':e}
+
+def del_product(productId):
+    with get_db_session() as session:
+        try:
+            stmt = select(Product).where(Product.id == productId)
+            productObj = session.execute(stmt).scalar()
+            if not productObj:
+                return {'success':False, 'message': 'Товара с таким Id не существует'}
+
+            stmt = select(Inventory.product_id).where(Inventory.product_id == productId)
+            isUsed = session.execute(stmt).scalar()
+            if isUsed:
+                return {'success': False, 'message': 'Невозможно удалить товар, который используется на складах'}
+
+            session.delete(productObj)
+
+            return {'success':True, 'message': 'Товар успешно удален'}
+        except Exception as e:
+            return {'success': False, 'message':e}
+
+
+print(del_product(6))

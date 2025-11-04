@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QLabel, QWidget, QWIDGETSIZE_MAX, QVBoxLayout, QStac
     QHeaderView, QFrame, QGraphicsDropShadowEffect, QScrollArea, QComboBox, QPushButton, QLineEdit, QMessageBox
 
 from services.inventory_service import get_inventory, add_count, substract_count, get_all_products, \
-    add_new_product_to_warehouse, del_product_from_warehouse
+    add_new_product_to_warehouse, del_product_from_warehouse, get_all_product_and_ids, add_product, del_product
 from ui.base_window import BaseWindow
 from ui.ui_elements.nav_panel import NavPanel
 from ui.ui_elements.table_model import TableModel
@@ -270,8 +270,7 @@ class InventoryWindow(BaseWindow):
             newProductSelectionLabel = QLabel('Товар: ')
             newProductSelectionLabel.setFixedWidth(110)
             self.newProductSelection = QComboBox()
-            self.newProductSelection.addItem('Выберите товар')
-            self.newProductSelection.addItems(get_all_products()['data'])
+            self.updateNewProductSelectionData()
             newProductSelectionLayout.addWidget(newProductSelectionLabel)
             newProductSelectionLayout.addWidget(self.newProductSelection)
 
@@ -299,12 +298,13 @@ class InventoryWindow(BaseWindow):
             contentLayout.addSpacing(30)
 
         # Добавление и удаление товара из общего списка
-        """if AppState.currentUser.role == 1:
-            self.newProductCard = QFrame()
-            self.newProductCard.setObjectName('cardLogin')
-            self.newProductCard.setFixedSize(1000, 500)
+        if AppState.currentUser.role == 1:
+            # Подложка под элементы
+            self.productCard = QFrame()
+            self.productCard.setObjectName('cardLogin')
+            self.productCard.setFixedSize(1000, 500)
 
-            newProductLayout = QVBoxLayout(self.newProductCard)
+            newProductLayout = QVBoxLayout(self.productCard)
             newProductLayout.setContentsMargins(15, 15, 15, 15)
 
             cardEffect = QGraphicsDropShadowEffect()
@@ -312,38 +312,100 @@ class InventoryWindow(BaseWindow):
             cardEffect.setXOffset(0)
             cardEffect.setYOffset(4)
             cardEffect.setColor(QColor(0, 0, 0, 120))
-            self.newProductCard.setGraphicsEffect(cardEffect)
+            self.productCard.setGraphicsEffect(cardEffect)
 
+            # Заголовок раздела
             newProductLabel = QLabel('Добавление и удаление товара из общего списка')
             newProductLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
             newProductLayout.addWidget(newProductLabel, alignment=Qt.AlignmentFlag.AlignCenter)
             newProductLayout.addSpacing(10)
 
-            # Модель для таблицы хранящихся товаров
-            productsHeaders = ['Название']
-            productsData = get_all_products()['data']
+            # Модель для таблицы товаров
+            productsHeaders = ['Id','Название']
+            productsData = get_all_product_and_ids()['data']
+            self.productsModel = TableModel(productsData, productsHeaders)
 
-            productsModel = TableModel(productsData, productsHeaders)
-
-
-            # Таблица хранящихся товаров
+            # Таблица для общего списка товаров
             productsTable = QTableView()
             productsTable.verticalHeader().setVisible(False)
-            productsTable.setModel(productsModel)
+            productsTable.setModel(self.productsModel)
             productsTable.resizeColumnsToContents()
             productsTable.setAlternatingRowColors(True)
             productsTable.setSelectionBehavior(productsTable.SelectionBehavior.SelectRows)
-            productsTable.setFixedSize(200, 200)
-            productsTable.setColumnWidth(0, 200)
+            productsTable.setFixedSize(515, 200)
+            productsTable.setColumnWidth(0, 100)
+            productsTable.setColumnWidth(1, 400)
 
             newProductLayout.addWidget(productsTable, alignment=Qt.AlignmentFlag.AlignCenter)
+            newProductLayout.addSpacing(10)
 
-            productNameLayout = QHBoxLayout()
-            productNameLabel = QLabel('Название товара: ')
+            # Layout для действий с общим списком товаров
+            actionWithProductsLayout = QVBoxLayout()
 
-            productName = QLineEdit()
+            # Добавление товара
+            addProductToSystemLayout = QVBoxLayout() # Layout с элементами для добавления
 
-            contentLayout.addWidget(self.newProductCard, alignment=Qt.AlignmentFlag.AlignCenter)"""
+            addProductToSystemLabel = QLabel('Добавление товара') # Заголовок элементов
+            addProductToSystemLayout.addWidget(addProductToSystemLabel, alignment=Qt.AlignmentFlag.AlignCenter)
+
+            newProductNameLayout = QHBoxLayout() # Layout для поля и подписи
+            newProductNameLayout.addStretch()
+
+            newProductNameLabel = QLabel('Имя нового товара: ') # Подпись поля
+            newProductNameLabel.setFixedWidth(205)
+            newProductNameLayout.addWidget(newProductNameLabel)
+
+            self.newProductNameLine = QLineEdit() # Поле ввода названия нового товара
+            self.newProductNameLine.setFixedWidth(220)
+            self.newProductNameLine.setMaxLength(50)
+            self.newProductNameLine.setPlaceholderText('Наименование товара')
+            newProductNameLayout.addWidget(self.newProductNameLine)
+
+            newProductNameLayout.addStretch()
+            addProductToSystemLayout.addLayout(newProductNameLayout)
+
+            addProductToSystemBtn = QPushButton('Добавить') # Кнопка добавления товара
+            addProductToSystemBtn.setFixedWidth(180)
+            addProductToSystemBtn.clicked.connect(self.add_product_to_database)
+            addProductToSystemLayout.addWidget(addProductToSystemBtn, alignment=Qt.AlignmentFlag.AlignCenter)
+
+            actionWithProductsLayout.addLayout(addProductToSystemLayout)
+            actionWithProductsLayout.addSpacing(10)
+
+            # Удаление товара
+            delProductFromSystemLayout = QVBoxLayout() # Layout с элементами для удаления
+
+            delProductFromSystemLabel = QLabel('Удаление товара') # Заголовок элементов удаления
+            delProductFromSystemLayout.addWidget(delProductFromSystemLabel, alignment=Qt.AlignmentFlag.AlignCenter)
+
+            delProductNameLayout = QHBoxLayout() # Layout для строки ввода и подписи
+            delProductNameLayout.addStretch()
+
+            delProductNameLabel = QLabel('Id удаляемого товара: ') # Подпись поля ввода id
+            delProductNameLabel.setFixedWidth(205)
+            delProductNameLayout.addWidget(delProductNameLabel)
+
+            self.delProductIdLine = QLineEdit() # Поле ввода id
+            self.delProductIdLine.setFixedWidth(220)
+            self.delProductIdLine.setMaxLength(10)
+            self.delProductIdLine.setValidator(QRegularExpressionValidator(QRegularExpression(r'^\d*$')))
+            self.delProductIdLine.setPlaceholderText('Id товара')
+            delProductNameLayout.addWidget(self.delProductIdLine)
+
+            delProductNameLayout.addStretch()
+            delProductFromSystemLayout.addLayout(delProductNameLayout)
+
+            delProductFromSystemBtn = QPushButton('Удалить') # Кнопка удаления товара
+            delProductFromSystemBtn.setFixedWidth(180)
+            delProductFromSystemBtn.clicked.connect(self.del_product_from_database)
+            delProductFromSystemLayout.addWidget(delProductFromSystemBtn, alignment=Qt.AlignmentFlag.AlignCenter)
+
+            actionWithProductsLayout.addLayout(delProductFromSystemLayout)
+
+            newProductLayout.addLayout(actionWithProductsLayout)
+
+            newProductLayout.addStretch()
+            contentLayout.addWidget(self.productCard, alignment=Qt.AlignmentFlag.AlignCenter)
 
         contentLayout.addStretch()
         mainLayout.addWidget(scrollArea)
@@ -412,6 +474,10 @@ class InventoryWindow(BaseWindow):
         self.inventoryFilterModel.sourceModel().update_data(newInventoryData)
         self.inventoryFilterModel.invalidateFilter()
 
+    def update_product_table(self):
+        newProductData = get_all_product_and_ids()['data']
+        self.productsModel.update_data(newProductData)
+
     def updateProductSelectionData(self):
         self.productSelection.clear()
         if self.warehouseSelection.currentIndex() == 0:
@@ -428,6 +494,11 @@ class InventoryWindow(BaseWindow):
         productList = list(set(productList))
         self.productSelection.addItems(productList)
 
+    def updateNewProductSelectionData(self):
+        self.newProductSelection.clear()
+        self.newProductSelection.addItem('Выберите товар')
+        self.newProductSelection.addItems(get_all_products()['data'])
+
     def add_new_product_to_warehouse(self):
         if self.toWarehouseSelection.currentIndex() == 0:
             QMessageBox.warning(self, 'Ошибка','Выберите склад')
@@ -443,6 +514,7 @@ class InventoryWindow(BaseWindow):
             if res['success']:
                 QMessageBox.information(self, 'Успех', res['message'])
                 self.update_inventory_table()
+                self.updateProductSelectionData()
                 return None
             QMessageBox.warning(self, 'Ошибка', res['message'])
         except Exception as e:
@@ -463,7 +535,51 @@ class InventoryWindow(BaseWindow):
             if res['success']:
                 QMessageBox.information(self, 'Успех', res['message'])
                 self.update_inventory_table()
+                self.updateProductSelectionData()
                 return None
             QMessageBox.warning(self, 'Ошибка', res['message'])
         except Exception as e:
             QMessageBox.warning(self, 'Ошибка', str(e))
+
+    def add_product_to_database(self):
+
+        newProductName = self.newProductNameLine.text().strip()
+        if not newProductName:
+            QMessageBox.warning(self, 'Ошибка', 'Введите имя нового товара')
+            return None
+        try:
+            res = add_product(newProductName)
+
+            if res['success']:
+                QMessageBox.information(self, 'Успех', res['message'])
+                self.update_product_table()
+                self.updateNewProductSelectionData()
+                self.updateProductSelectionData()
+                self.newProductNameLine.clear()
+                return None
+
+            QMessageBox.warning(self, 'Ошибка', res['message'])
+        except Exception as e:
+            QMessageBox.warning(self, 'Ошибка', str(e))
+
+    def del_product_from_database(self):
+
+        delProductId = self.delProductIdLine.text().strip()
+        if not delProductId:
+            QMessageBox.warning(self, 'Ошибка', 'Введите Id удаляемого товара')
+            return None
+        try:
+            delProductId = int(delProductId)
+            res = del_product(delProductId)
+
+            if res['success']:
+                QMessageBox.information(self, 'Успех', res['message'])
+                self.update_product_table()
+                self.updateNewProductSelectionData()
+                self.updateProductSelectionData()
+                self.delProductIdLine.clear()
+                return None
+
+            QMessageBox.warning(self, 'Ошибка', res['message'])
+        except Exception as e:
+            QMessageBox.warning(self,'Ошибка', str(e))

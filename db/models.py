@@ -1,6 +1,6 @@
 import datetime
 
-from sqlalchemy import CHAR, Column, Date, DateTime, ForeignKeyConstraint, Index, Integer, String, Table, Boolean
+from sqlalchemy import CHAR, Column, Date, DateTime, ForeignKeyConstraint, Index, Integer, String, Table, text
 from sqlalchemy.dialects.mysql import TINYINT
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -24,12 +24,10 @@ class Product(Base):
     __tablename__ = 'product'
     __table_args__ = (
         Index('name_UNIQUE', 'name', unique=True),
-        Index('sku_UNIQUE', 'sku', unique=True)
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False)
-    sku: Mapped[str] = mapped_column(String(20), nullable=False)
 
     inventory: Mapped[list['Inventory']] = relationship('Inventory', back_populates='product')
     shipment_line: Mapped[list['ShipmentLine']] = relationship('ShipmentLine', back_populates='product')
@@ -45,6 +43,7 @@ class Role(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False)
 
+    invite_code: Mapped[list['InviteCode']] = relationship('InviteCode', back_populates='role')
     user_account: Mapped[list['UserAccount']] = relationship('UserAccount', back_populates='role')
 
 
@@ -96,7 +95,7 @@ class Employee(Base):
     phone_number: Mapped[str] = mapped_column(String(20), nullable=False)
     post_id: Mapped[int] = mapped_column(Integer, nullable=False)
     date_of_employment: Mapped[datetime.date] = mapped_column(Date, nullable=False)
-    is_active: Mapped[int] = mapped_column(TINYINT, nullable=False)
+    is_active: Mapped[int] = mapped_column(TINYINT, nullable=False, server_default=text("'1'"))
 
     post: Mapped['Post'] = relationship('Post', back_populates='employee')
     warehouse: Mapped[list['Warehouse']] = relationship('Warehouse', secondary='employee_warehouse', back_populates='employee')
@@ -119,7 +118,7 @@ class Inventory(Base):
     product_id: Mapped[int] = mapped_column(Integer, nullable=False)
     warehouse_id: Mapped[int] = mapped_column(Integer, nullable=False)
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
-    updated_at: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False)
+    updated_at: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False, server_default=text('CURRENT_TIMESTAMP'))
 
     product: Mapped['Product'] = relationship('Product', back_populates='inventory')
     warehouse: Mapped['Warehouse'] = relationship('Warehouse', back_populates='inventory')
@@ -139,7 +138,7 @@ class InviteCode(Base):
     __tablename__ = 'invite_code'
     __table_args__ = (
         ForeignKeyConstraint(['employee_id'], ['employee.id'], name='employee_id_invite_code'),
-        ForeignKeyConstraint(['role_id'], ['invite_code.id'], name='role_id_invite_code'),
+        ForeignKeyConstraint(['role_id'], ['role.id'], name='role_id_invite_code'),
         Index('code_UNIQUE', 'code', unique=True),
         Index('employee_id_UNIQUE', 'employee_id', unique=True),
         Index('role_id_invite_code_idx', 'role_id')
@@ -149,11 +148,10 @@ class InviteCode(Base):
     code: Mapped[str] = mapped_column(String(50), nullable=False)
     employee_id: Mapped[int] = mapped_column(Integer, nullable=False)
     role_id: Mapped[int] = mapped_column(Integer, nullable=False)
-    is_active: Mapped[int] = mapped_column(TINYINT, nullable=False)
+    is_active: Mapped[int] = mapped_column(TINYINT, nullable=False, server_default=text("'1'"))
 
     employee: Mapped['Employee'] = relationship('Employee', back_populates='invite_code')
-    role: Mapped['InviteCode'] = relationship('InviteCode', remote_side=[id], back_populates='role_reverse')
-    role_reverse: Mapped[list['InviteCode']] = relationship('InviteCode', remote_side=[role_id], back_populates='role')
+    role: Mapped['Role'] = relationship('Role', back_populates='invite_code')
 
 
 class Shipment(Base):
@@ -217,7 +215,7 @@ class UserAccount(Base):
     password: Mapped[str] = mapped_column(String(255), nullable=False)
     employee_id: Mapped[int] = mapped_column(Integer, nullable=False)
     role_id: Mapped[int] = mapped_column(Integer, nullable=False)
-    is_active: Mapped[int] = mapped_column(TINYINT, nullable=False)
+    is_active: Mapped[int] = mapped_column(TINYINT, nullable=False, server_default=text("'1'"))
 
     employee: Mapped['Employee'] = relationship('Employee', back_populates='user_account')
     role: Mapped['Role'] = relationship('Role', back_populates='user_account')
