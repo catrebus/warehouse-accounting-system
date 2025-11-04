@@ -168,8 +168,8 @@ class InventoryWindow(BaseWindow):
         self.warehouseSelection = QComboBox()
         self.warehouseSelection.setFixedWidth(400)
         self.warehouseSelection.addItem('Выберите склад')
-
         self.warehouseSelection.addItems(warehouseList)
+        self.warehouseSelection.currentTextChanged.connect(self.updateProductSelectionData)
 
         warehouseSelectionLayout.addWidget(warehouseSelectionLabel)
         warehouseSelectionLayout.addWidget(self.warehouseSelection)
@@ -182,14 +182,12 @@ class InventoryWindow(BaseWindow):
         productSelectionLabel.setFixedWidth(110)
 
         self.productSelection = QComboBox()
+
         self.productSelection.setFixedWidth(400)
         self.productSelection.addItem('Выберите товар')
 
-        productList = []
-        for product in inventoryData:
-            productList.append(product[0])
-        productList = list(set(productList))
-        self.productSelection.addItems(productList)
+        self.updateProductSelectionData()
+
 
         productSelectionLayout.addWidget(productSelectionLabel)
         productSelectionLayout.addWidget(self.productSelection)
@@ -286,3 +284,19 @@ class InventoryWindow(BaseWindow):
         newInventoryData = get_inventory(AppState.currentUser.warehouses)
         self.inventoryFilterModel.sourceModel().update_data(newInventoryData)
         self.inventoryFilterModel.invalidateFilter()
+
+    def updateProductSelectionData(self):
+        self.productSelection.clear()
+        if self.warehouseSelection.currentIndex() == 0:
+            self.productSelection.addItem('Склад не выбран')
+            return None
+
+        self.productSelection.addItem('Выберите товар')
+        inventoryData = get_inventory(AppState.currentUser.warehouses)
+
+        productList = []
+        for item in inventoryData:
+            if item[1] == self.warehouseSelection.currentText():
+                productList.append(item[0])
+        productList = list(set(productList))
+        self.productSelection.addItems(productList)

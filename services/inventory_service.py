@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy import select, update
 
 from db.db_session import get_db_session
@@ -30,7 +32,7 @@ def add_count(productName,warehouse, quantity):
             stmt = update(Inventory).where(
                 Inventory.product_id==(select(Product.id).where(Product.name==productName).scalar_subquery()),
                 Inventory.warehouse_id==(select(Warehouse.id).where(Warehouse.name==warehouse)).scalar_subquery())\
-                .values(quantity=quantity+Inventory.quantity)
+                .values(quantity=quantity+Inventory.quantity).values(updated_at=datetime.now())
             session.execute(stmt)
         except Exception as e:
             return {'success': False, 'message':e}
@@ -50,14 +52,11 @@ def substract_count(productName,warehouse, quantity):
             stmt = update(Inventory).where(
                 Inventory.product_id == (select(Product.id).where(Product.name == productName).scalar_subquery()),
                 Inventory.warehouse_id == (select(Warehouse.id).where(Warehouse.name == warehouse)).scalar_subquery()) \
-                .values(quantity=Inventory.quantity - quantity)
+                .values(quantity=Inventory.quantity - quantity).values(updated_at=datetime.now())
 
             session.execute(stmt)
         except Exception as e:
             return {'success': False, 'message':e}
         return {'success': True, 'message':'Количество товара успешно обновлено'}
 
-#inv = add_count('Носки Ангора Серые', 'АльфаСклад', 200000000)
-#print(inv)
 
-#print(substract_count('Носки Ангора Серые', 'АльфаСклад', 200000000))
