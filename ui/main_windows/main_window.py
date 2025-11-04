@@ -1,7 +1,6 @@
 from PyQt6.QtCore import QSize, Qt
-from PyQt6.QtGui import QStandardItemModel
 from PyQt6.QtWidgets import QLabel, QWidget, QWIDGETSIZE_MAX, QVBoxLayout, QStackedLayout, QTableView, \
-    QAbstractItemView, QHeaderView
+    QHeaderView
 
 from services.info_from_db import get_upcoming_shipments
 from ui.base_window import BaseWindow

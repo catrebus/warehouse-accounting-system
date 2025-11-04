@@ -55,7 +55,7 @@ class MultiFilterProxyModelUsers(QSortFilterProxyModel):
 
         return True
 
-class MultiFilterProxyModelEmoloyees(QSortFilterProxyModel):
+class MultiFilterProxyModelEmployees(QSortFilterProxyModel):
     """Класс прокси модели для реализации фильтрации в таблице сотрудники"""
     def __init__(self):
         super().__init__()
@@ -260,7 +260,7 @@ class UserControlsWindow(BaseWindow):
         employeesModel = TableModel(employeesData, employeeHeaders)
 
         # Модель для фильтрации
-        self.employeesFilterModel = MultiFilterProxyModelEmoloyees()
+        self.employeesFilterModel = MultiFilterProxyModelEmployees()
         self.employeesFilterModel.setSourceModel(employeesModel)
 
         # Виджет таблицы
