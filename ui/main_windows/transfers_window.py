@@ -47,11 +47,7 @@ class TransfersWindow(BaseWindow):
         titleLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         contentLayout.addWidget(titleLabel, alignment=Qt.AlignmentFlag.AlignTop)
 
-        # Приветствие
-        hiLabel = QLabel(f'Добро пожаловать, {self.user.login}')
-        hiLabel.setFixedHeight(40)
-        hiLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        contentLayout.addWidget(hiLabel, alignment=Qt.AlignmentFlag.AlignTop)
+
 
         contentLayout.addStretch()
         mainLayout.addWidget(contentWidget)

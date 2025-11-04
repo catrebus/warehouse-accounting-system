@@ -145,5 +145,3 @@ def del_product(productId):
         except Exception as e:
             return {'success': False, 'message':e}
 
-
-print(del_product(6))

@@ -429,6 +429,11 @@ class InventoryWindow(BaseWindow):
         if self.productSelection.currentIndex() == 0:
             QMessageBox.warning(self, 'Ошибка', 'Выберите товар')
             return None
+
+        if not self.productCountLine.text():
+            QMessageBox.warning(self, 'Ошибка','Введите количество')
+            return None
+
         try:
             warehouse = self.warehouseSelection.currentText()
             product = self.productSelection.currentText()
@@ -452,6 +457,10 @@ class InventoryWindow(BaseWindow):
 
         if self.productSelection.currentIndex() == 0:
             QMessageBox.warning(self, 'Ошибка', 'Выберите товар')
+            return None
+
+        if not self.productCountLine.text():
+            QMessageBox.warning(self, 'Ошибка','Введите количество')
             return None
         try:
             warehouse = self.warehouseSelection.currentText()
