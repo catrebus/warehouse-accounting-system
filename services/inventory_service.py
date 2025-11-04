@@ -59,4 +59,50 @@ def substract_count(productName,warehouse, quantity):
             return {'success': False, 'message':e}
         return {'success': True, 'message':'Количество товара успешно обновлено'}
 
+def add_new_product_to_warehouse(productName,warehouse):
+    with get_db_session() as session:
+        try:
+            stmt = select(Inventory).where(
+                Inventory.product_id == (select(Product.id).where(Product.name == productName).scalar_subquery()),
+                Inventory.warehouse_id == (select(Warehouse.id).where(Warehouse.name == warehouse)).scalar_subquery())
+            isAlreadeExists = session.execute(stmt).scalar()
+            if isAlreadeExists:
+                return {'success': False, 'message':'Этот товар уже есть на складе'}
+
+            warehouseId = session.scalar(select(Warehouse.id).where(Warehouse.name == warehouse))
+            productId = session.scalar(select(Product.id).where(Product.name == productName))
+
+            newInventory = Inventory(product_id=productId, warehouse_id=warehouseId, quantity=0, updated_at=datetime.now())
+
+            session.add(newInventory)
+            return {'success':True, 'message':'Новый товар успешно добавлен'}
+
+        except Exception as e:
+            return {'success': False, 'message':e}
+
+def del_product_from_warehouse(productName,warehouse):
+    with get_db_session() as session:
+        try:
+            stmt = select(Inventory).where(
+                Inventory.product_id == (select(Product.id).where(Product.name == productName).scalar_subquery()),
+                Inventory.warehouse_id == (select(Warehouse.id).where(Warehouse.name == warehouse)).scalar_subquery())
+            inventoryItem = session.execute(stmt).scalar()
+            if inventoryItem:
+                session.delete(inventoryItem)
+                return {'success': True, 'message':'Товар успешно удален'}
+            return {'success': False, 'message': 'Этого товара нет складе'}
+
+        except Exception as e:
+            return {'success': False, 'message':e}
+
+def get_all_products():
+    with get_db_session() as session:
+        try:
+            stmt = select(Product.name)
+            products = session.scalars(stmt).all()
+            return {'success':True, 'data':products}
+
+        except Exception as e:
+            return {'success': False, 'message':e}
+
 

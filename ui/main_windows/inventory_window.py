@@ -3,7 +3,8 @@ from PyQt6.QtGui import QColor, QRegularExpressionValidator
 from PyQt6.QtWidgets import QLabel, QWidget, QWIDGETSIZE_MAX, QVBoxLayout, QStackedLayout, QHBoxLayout, QTableView, \
     QHeaderView, QFrame, QGraphicsDropShadowEffect, QScrollArea, QComboBox, QPushButton, QLineEdit, QMessageBox
 
-from services.inventory_service import get_inventory, add_count
+from services.inventory_service import get_inventory, add_count, substract_count, get_all_products, \
+    add_new_product_to_warehouse, del_product_from_warehouse
 from ui.base_window import BaseWindow
 from ui.ui_elements.nav_panel import NavPanel
 from ui.ui_elements.table_model import TableModel
@@ -188,7 +189,6 @@ class InventoryWindow(BaseWindow):
 
         self.updateProductSelectionData()
 
-
         productSelectionLayout.addWidget(productSelectionLabel)
         productSelectionLayout.addWidget(self.productSelection)
 
@@ -198,7 +198,6 @@ class InventoryWindow(BaseWindow):
         productCountLayout = QHBoxLayout()
         productCountLabel = QLabel('Количество: ')
         productCountLabel.setFixedWidth(110)
-
 
         self.productCountLine = QLineEdit()
         self.productCountLine.setFixedWidth(400)
@@ -225,19 +224,126 @@ class InventoryWindow(BaseWindow):
         subtractProductBtn.clicked.connect(self.substract_product_count)
         manipulateProductBtnLayout.addWidget(subtractProductBtn)
 
-        """setQuantityBtn = QPushButton("Установить кол-во")
-        setQuantityBtn.setFixedWidth(170)
-        manipulateProductBtnLayout.addWidget(setQuantityBtn)"""
-
         manipulateProductBtnLayout.addStretch()
         manipulateProductLayout.addLayout(manipulateProductBtnLayout)
 
         manipulateProductLayout.addStretch()
         inventoryLayout.addLayout(manipulateProductLayout)
         contentLayout.addWidget(self.inventoryCard, alignment=Qt.AlignmentFlag.AlignCenter)
+        contentLayout.addSpacing(30)
 
-        # Далее
+        # Добавление нового товара на склад
+        if AppState.currentUser.role in [1,3]:
 
+            self.newProductToWarehouseCard = QFrame()
+            self.newProductToWarehouseCard.setObjectName('cardLogin')
+            self.newProductToWarehouseCard.setFixedSize(1000, 160)
+
+            newProductToWarehouseLayout = QVBoxLayout(self.newProductToWarehouseCard)
+            newProductToWarehouseLayout.setContentsMargins(15, 15, 15, 15)
+
+            cardEffect = QGraphicsDropShadowEffect()
+            cardEffect.setBlurRadius(30)
+            cardEffect.setXOffset(0)
+            cardEffect.setYOffset(4)
+            cardEffect.setColor(QColor(0, 0, 0, 120))
+            self.newProductToWarehouseCard.setGraphicsEffect(cardEffect)
+
+            # Заголовок добавления нового товара на склад
+            newProductToWarehouseLabel = QLabel('Добавление и удаление товара со склада')
+            newProductToWarehouseLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            newProductToWarehouseLayout.addWidget(newProductToWarehouseLabel, alignment=Qt.AlignmentFlag.AlignCenter)
+            newProductToWarehouseLayout.addSpacing(10)
+
+            toWarehouseLayout = QHBoxLayout()
+            toWarehouseLabel = QLabel('Склад: ')
+            toWarehouseLabel.setFixedWidth(110)
+            self.toWarehouseSelection = QComboBox()
+            self.toWarehouseSelection.addItem('Выберите склад')
+            self.toWarehouseSelection.addItems(warehouseList)
+            toWarehouseLayout.addWidget(toWarehouseLabel)
+            toWarehouseLayout.addWidget(self.toWarehouseSelection)
+
+            newProductToWarehouseLayout.addLayout(toWarehouseLayout)
+
+            newProductSelectionLayout = QHBoxLayout()
+            newProductSelectionLabel = QLabel('Товар: ')
+            newProductSelectionLabel.setFixedWidth(110)
+            self.newProductSelection = QComboBox()
+            self.newProductSelection.addItem('Выберите товар')
+            self.newProductSelection.addItems(get_all_products()['data'])
+            newProductSelectionLayout.addWidget(newProductSelectionLabel)
+            newProductSelectionLayout.addWidget(self.newProductSelection)
+
+            newProductToWarehouseLayout.addLayout(newProductSelectionLayout)
+
+            delAddProductWarehouseBtns = QHBoxLayout()
+
+            delAddProductWarehouseBtns.addStretch()
+            addNewProductToWarehouseBtn = QPushButton('Добавить')
+            addNewProductToWarehouseBtn.clicked.connect(self.add_new_product_to_warehouse)
+            addNewProductToWarehouseBtn.setFixedWidth(170)
+            delAddProductWarehouseBtns.addWidget(addNewProductToWarehouseBtn, alignment=Qt.AlignmentFlag.AlignCenter)
+
+            deleteProductFromWarehouseBtn = QPushButton('Удалить')
+            deleteProductFromWarehouseBtn.clicked.connect(self.del_product_from_warehouse)
+            deleteProductFromWarehouseBtn.setFixedWidth(170)
+            delAddProductWarehouseBtns.addWidget(deleteProductFromWarehouseBtn, alignment=Qt.AlignmentFlag.AlignCenter)
+            delAddProductWarehouseBtns.addStretch()
+
+            newProductToWarehouseLayout.addLayout(delAddProductWarehouseBtns)
+
+            newProductToWarehouseLayout.addStretch()
+
+            contentLayout.addWidget(self.newProductToWarehouseCard, alignment=Qt.AlignmentFlag.AlignCenter)
+            contentLayout.addSpacing(30)
+
+        # Добавление и удаление товара из общего списка
+        """if AppState.currentUser.role == 1:
+            self.newProductCard = QFrame()
+            self.newProductCard.setObjectName('cardLogin')
+            self.newProductCard.setFixedSize(1000, 500)
+
+            newProductLayout = QVBoxLayout(self.newProductCard)
+            newProductLayout.setContentsMargins(15, 15, 15, 15)
+
+            cardEffect = QGraphicsDropShadowEffect()
+            cardEffect.setBlurRadius(30)
+            cardEffect.setXOffset(0)
+            cardEffect.setYOffset(4)
+            cardEffect.setColor(QColor(0, 0, 0, 120))
+            self.newProductCard.setGraphicsEffect(cardEffect)
+
+            newProductLabel = QLabel('Добавление и удаление товара из общего списка')
+            newProductLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            newProductLayout.addWidget(newProductLabel, alignment=Qt.AlignmentFlag.AlignCenter)
+            newProductLayout.addSpacing(10)
+
+            # Модель для таблицы хранящихся товаров
+            productsHeaders = ['Название']
+            productsData = get_all_products()['data']
+
+            productsModel = TableModel(productsData, productsHeaders)
+
+
+            # Таблица хранящихся товаров
+            productsTable = QTableView()
+            productsTable.verticalHeader().setVisible(False)
+            productsTable.setModel(productsModel)
+            productsTable.resizeColumnsToContents()
+            productsTable.setAlternatingRowColors(True)
+            productsTable.setSelectionBehavior(productsTable.SelectionBehavior.SelectRows)
+            productsTable.setFixedSize(200, 200)
+            productsTable.setColumnWidth(0, 200)
+
+            newProductLayout.addWidget(productsTable, alignment=Qt.AlignmentFlag.AlignCenter)
+
+            productNameLayout = QHBoxLayout()
+            productNameLabel = QLabel('Название товара: ')
+
+            productName = QLineEdit()
+
+            contentLayout.addWidget(self.newProductCard, alignment=Qt.AlignmentFlag.AlignCenter)"""
 
         contentLayout.addStretch()
         mainLayout.addWidget(scrollArea)
@@ -278,7 +384,28 @@ class InventoryWindow(BaseWindow):
             QMessageBox.warning(self, 'Ошибка', str(e))
 
     def substract_product_count(self):
-        pass
+        if self.warehouseSelection.currentIndex() == 0:
+            QMessageBox.warning(self, 'Ошибка', 'Выберите склад')
+            return None
+
+        if self.productSelection.currentIndex() == 0:
+            QMessageBox.warning(self, 'Ошибка', 'Выберите товар')
+            return None
+        try:
+            warehouse = self.warehouseSelection.currentText()
+            product = self.productSelection.currentText()
+            quantity = int(self.productCountLine.text())
+
+            res = substract_count(product, warehouse, quantity)
+            if res['success']:
+                QMessageBox.information(self, 'Успех', res['message'])
+                self.update_inventory_table()
+                self.productCountLine.clear()
+                return None
+            QMessageBox.warning(self, 'Ошбика', res['message'])
+
+        except Exception as e:
+            QMessageBox.warning(self, 'Ошибка', str(e))
 
     def update_inventory_table(self):
         newInventoryData = get_inventory(AppState.currentUser.warehouses)
@@ -300,3 +427,43 @@ class InventoryWindow(BaseWindow):
                 productList.append(item[0])
         productList = list(set(productList))
         self.productSelection.addItems(productList)
+
+    def add_new_product_to_warehouse(self):
+        if self.toWarehouseSelection.currentIndex() == 0:
+            QMessageBox.warning(self, 'Ошибка','Выберите склад')
+            return None
+        if self.newProductSelection.currentIndex() == 0:
+            QMessageBox.warning(self, "Ошибка", "Выберите товар")
+            return None
+        try:
+            warehouse = self.toWarehouseSelection.currentText()
+            product = self.newProductSelection.currentText()
+
+            res = add_new_product_to_warehouse(product, warehouse)
+            if res['success']:
+                QMessageBox.information(self, 'Успех', res['message'])
+                self.update_inventory_table()
+                return None
+            QMessageBox.warning(self, 'Ошибка', res['message'])
+        except Exception as e:
+            QMessageBox.warning(self, 'Ошибка', str(e))
+
+    def del_product_from_warehouse(self):
+        if self.toWarehouseSelection.currentIndex() == 0:
+            QMessageBox.warning(self, 'Ошибка', 'Выберите склад')
+            return None
+        if self.newProductSelection.currentIndex() == 0:
+            QMessageBox.warning(self, "Ошибка", "Выберите товар")
+            return None
+        try:
+            warehouse = self.toWarehouseSelection.currentText()
+            product = self.newProductSelection.currentText()
+
+            res = del_product_from_warehouse(product, warehouse)
+            if res['success']:
+                QMessageBox.information(self, 'Успех', res['message'])
+                self.update_inventory_table()
+                return None
+            QMessageBox.warning(self, 'Ошибка', res['message'])
+        except Exception as e:
+            QMessageBox.warning(self, 'Ошибка', str(e))
