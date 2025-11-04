@@ -1,9 +1,9 @@
 from PyQt6.QtCore import QSize, Qt, QRegularExpression, QSortFilterProxyModel
 from PyQt6.QtGui import QColor, QRegularExpressionValidator
 from PyQt6.QtWidgets import QLabel, QWidget, QWIDGETSIZE_MAX, QVBoxLayout, QStackedLayout, QHBoxLayout, QTableView, \
-    QHeaderView, QFrame, QGraphicsDropShadowEffect, QScrollArea, QComboBox, QPushButton, QLineEdit
+    QHeaderView, QFrame, QGraphicsDropShadowEffect, QScrollArea, QComboBox, QPushButton, QLineEdit, QMessageBox
 
-from services.inventory_service import get_inventory
+from services.inventory_service import get_inventory, add_count
 from ui.base_window import BaseWindow
 from ui.ui_elements.nav_panel import NavPanel
 from ui.ui_elements.table_model import TableModel
@@ -160,55 +160,56 @@ class InventoryWindow(BaseWindow):
         manipulateProductLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         manipulateProductLayout.addWidget(manipulateProductLabel)
 
-        # Поле выбора товара
-        productSelectionLayout = QHBoxLayout()
-        productSelectionLabel = QLabel('Товар: ')
-        productSelectionLabel.setFixedWidth(110)
-
-        productSelection = QComboBox()
-        productSelection.setFixedWidth(400)
-        productSelection.addItem('Выберите товар')
-
-        productList = []
-        for product in inventoryData:
-            productList.append(product[0])
-        productList = list(set(productList))
-        productSelection.addItems(productList)
-
-        productSelectionLayout.addWidget(productSelectionLabel)
-        productSelectionLayout.addWidget(productSelection)
-
-        manipulateProductLayout.addLayout(productSelectionLayout)
-
         # Поле выбора склада
         warehouseSelectionLayout = QHBoxLayout()
         warehouseSelectionLabel = QLabel('Склад: ')
         warehouseSelectionLabel.setFixedWidth(110)
 
-        warehouseSelection = QComboBox()
-        warehouseSelection.setFixedWidth(400)
-        warehouseSelection.addItem('Выберите склад')
+        self.warehouseSelection = QComboBox()
+        self.warehouseSelection.setFixedWidth(400)
+        self.warehouseSelection.addItem('Выберите склад')
 
-
-        warehouseSelection.addItems(warehouseList)
+        self.warehouseSelection.addItems(warehouseList)
 
         warehouseSelectionLayout.addWidget(warehouseSelectionLabel)
-        warehouseSelectionLayout.addWidget(warehouseSelection)
+        warehouseSelectionLayout.addWidget(self.warehouseSelection)
 
         manipulateProductLayout.addLayout(warehouseSelectionLayout)
+
+        # Поле выбора товара
+        productSelectionLayout = QHBoxLayout()
+        productSelectionLabel = QLabel('Товар: ')
+        productSelectionLabel.setFixedWidth(110)
+
+        self.productSelection = QComboBox()
+        self.productSelection.setFixedWidth(400)
+        self.productSelection.addItem('Выберите товар')
+
+        productList = []
+        for product in inventoryData:
+            productList.append(product[0])
+        productList = list(set(productList))
+        self.productSelection.addItems(productList)
+
+        productSelectionLayout.addWidget(productSelectionLabel)
+        productSelectionLayout.addWidget(self.productSelection)
+
+        manipulateProductLayout.addLayout(productSelectionLayout)
 
         # Поле ввода количества товара
         productCountLayout = QHBoxLayout()
         productCountLabel = QLabel('Количество: ')
         productCountLabel.setFixedWidth(110)
 
-        productCountLine = QLineEdit()
-        productCountLine.setFixedWidth(400)
-        productCountLine.setPlaceholderText("Количество товара")
-        productCountLine.setValidator(QRegularExpressionValidator(QRegularExpression(r"^[1-9][0-9]*$")))
+
+        self.productCountLine = QLineEdit()
+        self.productCountLine.setFixedWidth(400)
+        self.productCountLine.setPlaceholderText("Количество товара")
+        self.productCountLine.setMaxLength(10)
+        self.productCountLine.setValidator(QRegularExpressionValidator(QRegularExpression(r"^[1-9][0-9]*$")))
 
         productCountLayout.addWidget(productCountLabel)
-        productCountLayout.addWidget(productCountLine)
+        productCountLayout.addWidget(self.productCountLine)
 
         manipulateProductLayout.addLayout(productCountLayout)
 
@@ -218,15 +219,17 @@ class InventoryWindow(BaseWindow):
 
         addProductBtn = QPushButton("Добавить")
         addProductBtn.setFixedWidth(170)
+        addProductBtn.clicked.connect(self.add_product_count)
         manipulateProductBtnLayout.addWidget(addProductBtn)
 
-        subtractProductBtn = QPushButton("Убавить")
+        subtractProductBtn = QPushButton("Отнять")
         subtractProductBtn.setFixedWidth(170)
+        subtractProductBtn.clicked.connect(self.substract_product_count)
         manipulateProductBtnLayout.addWidget(subtractProductBtn)
 
-        setQuantityBtn = QPushButton("Установить кол-во")
+        """setQuantityBtn = QPushButton("Установить кол-во")
         setQuantityBtn.setFixedWidth(170)
-        manipulateProductBtnLayout.addWidget(setQuantityBtn)
+        manipulateProductBtnLayout.addWidget(setQuantityBtn)"""
 
         manipulateProductBtnLayout.addStretch()
         manipulateProductLayout.addLayout(manipulateProductBtnLayout)
@@ -250,4 +253,36 @@ class InventoryWindow(BaseWindow):
     def update_inventory_filters(self):
         self.inventoryFilterModel.productNameFilter = self.productNameFilter.text()
         self.inventoryFilterModel.warehouseFilter = self.warehouseFilter.currentText()
+        self.inventoryFilterModel.invalidateFilter()
+
+    def add_product_count(self):
+        if self.warehouseSelection.currentIndex() == 0:
+            QMessageBox.warning(self, 'Ошибка', 'Выберите склад')
+            return None
+
+        if self.productSelection.currentIndex() == 0:
+            QMessageBox.warning(self, 'Ошибка', 'Выберите товар')
+            return None
+        try:
+            warehouse = self.warehouseSelection.currentText()
+            product = self.productSelection.currentText()
+            quantity = int(self.productCountLine.text())
+
+            res = add_count(product, warehouse, quantity)
+            if res['success']:
+                QMessageBox.information(self, 'Успех', res['message'])
+                self.update_inventory_table()
+                self.productCountLine.clear()
+                return None
+            QMessageBox.warning(self, 'Ошбика', res['message'])
+
+        except Exception as e:
+            QMessageBox.warning(self, 'Ошибка', str(e))
+
+    def substract_product_count(self):
+        pass
+
+    def update_inventory_table(self):
+        newInventoryData = get_inventory(AppState.currentUser.warehouses)
+        self.inventoryFilterModel.sourceModel().update_data(newInventoryData)
         self.inventoryFilterModel.invalidateFilter()
