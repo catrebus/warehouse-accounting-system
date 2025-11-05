@@ -170,7 +170,7 @@ class InventoryWindow(BaseWindow):
         self.warehouseSelection.setFixedWidth(400)
         self.warehouseSelection.addItem('Выберите склад')
         self.warehouseSelection.addItems(warehouseList)
-        self.warehouseSelection.currentTextChanged.connect(self.updateProductSelectionData)
+        self.warehouseSelection.currentTextChanged.connect(self.update_product_selection_data)
 
         warehouseSelectionLayout.addWidget(warehouseSelectionLabel)
         warehouseSelectionLayout.addWidget(self.warehouseSelection)
@@ -187,7 +187,7 @@ class InventoryWindow(BaseWindow):
         self.productSelection.setFixedWidth(400)
         self.productSelection.addItem('Выберите товар')
 
-        self.updateProductSelectionData()
+        self.update_product_selection_data()
 
         productSelectionLayout.addWidget(productSelectionLabel)
         productSelectionLayout.addWidget(self.productSelection)
@@ -270,7 +270,7 @@ class InventoryWindow(BaseWindow):
             newProductSelectionLabel = QLabel('Товар: ')
             newProductSelectionLabel.setFixedWidth(110)
             self.newProductSelection = QComboBox()
-            self.updateNewProductSelectionData()
+            self.update_new_product_selection_data()
             newProductSelectionLayout.addWidget(newProductSelectionLabel)
             newProductSelectionLayout.addWidget(self.newProductSelection)
 
@@ -487,7 +487,7 @@ class InventoryWindow(BaseWindow):
         newProductData = get_all_product_and_ids()['data']
         self.productsModel.update_data(newProductData)
 
-    def updateProductSelectionData(self):
+    def update_product_selection_data(self):
         self.productSelection.clear()
         if self.warehouseSelection.currentIndex() == 0:
             self.productSelection.addItem('Склад не выбран')
@@ -503,7 +503,7 @@ class InventoryWindow(BaseWindow):
         productList = list(set(productList))
         self.productSelection.addItems(productList)
 
-    def updateNewProductSelectionData(self):
+    def update_new_product_selection_data(self):
         self.newProductSelection.clear()
         self.newProductSelection.addItem('Выберите товар')
         self.newProductSelection.addItems(get_all_products()['data'])
@@ -523,7 +523,7 @@ class InventoryWindow(BaseWindow):
             if res['success']:
                 QMessageBox.information(self, 'Успех', res['message'])
                 self.update_inventory_table()
-                self.updateProductSelectionData()
+                self.update_product_selection_data()
                 return None
             QMessageBox.warning(self, 'Ошибка', res['message'])
         except Exception as e:
@@ -544,7 +544,7 @@ class InventoryWindow(BaseWindow):
             if res['success']:
                 QMessageBox.information(self, 'Успех', res['message'])
                 self.update_inventory_table()
-                self.updateProductSelectionData()
+                self.update_product_selection_data()
                 return None
             QMessageBox.warning(self, 'Ошибка', res['message'])
         except Exception as e:
@@ -562,8 +562,8 @@ class InventoryWindow(BaseWindow):
             if res['success']:
                 QMessageBox.information(self, 'Успех', res['message'])
                 self.update_product_table()
-                self.updateNewProductSelectionData()
-                self.updateProductSelectionData()
+                self.update_new_product_selection_data()
+                self.update_product_selection_data()
                 self.newProductNameLine.clear()
                 return None
 
@@ -584,11 +584,17 @@ class InventoryWindow(BaseWindow):
             if res['success']:
                 QMessageBox.information(self, 'Успех', res['message'])
                 self.update_product_table()
-                self.updateNewProductSelectionData()
-                self.updateProductSelectionData()
+                self.update_new_product_selection_data()
+                self.update_product_selection_data()
                 self.delProductIdLine.clear()
                 return None
 
             QMessageBox.warning(self, 'Ошибка', res['message'])
         except Exception as e:
             QMessageBox.warning(self,'Ошибка', str(e))
+
+    def refresh(self):
+        self.update_inventory_table()
+        self.update_product_table()
+        self.update_new_product_selection_data()
+        self.update_product_selection_data()

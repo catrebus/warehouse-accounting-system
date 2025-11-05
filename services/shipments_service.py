@@ -2,7 +2,7 @@ from ctypes.wintypes import HDESK
 from datetime import datetime
 from typing import List
 
-from sqlalchemy import select, func, update
+from sqlalchemy import select, func, update, or_
 
 from db.db_session import get_db_session
 from db.models import Supplier, Shipment, Employee, Warehouse, ShipmentLine, Product, Inventory, UserAccount
@@ -147,6 +147,31 @@ def add_new_shipment(supplierId:int, warehouseId:int, productsList:List):
                 'data': str(e)
             }
 
+def add_new_supplier(supplierName, supplierPhone, supplierEmail):
+    with get_db_session() as session:
+        try:
+            stmt = select(Supplier).where(
+                or_(
+                    Supplier.name == supplierName,
+                    Supplier.email == supplierEmail,
+                    Supplier.phone_number == supplierPhone
+                )
+            )
+            isUnique = session.scalar(stmt)
+            if isUnique:
+                return {
+                    'success': False,
+                    'data': 'Вы ввели уже существующее значение'
+                }
 
-
-
+            supplier = Supplier(name=supplierName, phone_number=supplierPhone,email=supplierEmail)
+            session.add(supplier)
+            return {
+                'success': True,
+                'data': 'Поставщик успешно добавлен'
+            }
+        except Exception as e:
+            return {
+                'success': False,
+                'data': str(e)
+            }

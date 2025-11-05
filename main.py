@@ -142,10 +142,12 @@ class ResizableWindowManager(QStackedWidget):
         self.setCurrentWidget(self.mainWindow)
 
     def switch_to_inventory(self):
+        self.inventoryWindow.refresh()
         self.inventoryWindow.apply_window_properties(self)
         self.setCurrentWidget(self.inventoryWindow)
 
     def switch_to_shipments(self):
+
         self.shipmentsWindow.apply_window_properties(self)
         self.setCurrentWidget(self.shipmentsWindow)
 

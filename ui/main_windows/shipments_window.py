@@ -1,10 +1,13 @@
+import re
+
 from PyQt6.QtCore import QSize, Qt, QRegularExpression
 from PyQt6.QtGui import QColor, QRegularExpressionValidator
 from PyQt6.QtWidgets import QLabel, QWidget, QWIDGETSIZE_MAX, QVBoxLayout, QStackedLayout, QFrame, \
     QGraphicsDropShadowEffect, QHBoxLayout, QComboBox, QPushButton, QMessageBox, QScrollArea, QTableView, QHeaderView, \
     QLineEdit, QDialog
 
-from services.shipments_service import get_suppliers_name, get_suppliers_data, get_shipments_data, get_users_warehouses
+from services.shipments_service import get_suppliers_name, get_suppliers_data, get_shipments_data, get_users_warehouses, \
+    add_new_supplier
 from ui.base_window import BaseWindow
 from ui.ui_elements.create_new_shipment_window import CreateNewShipmentWindow
 from ui.ui_elements.nav_panel import NavPanel
@@ -193,13 +196,13 @@ class ShipmentsWindow(BaseWindow):
 
             newSupplierNameLabel = QLabel('Имя: ')
             newSupplierNameLabel.setFixedWidth(150)
-            newSupplierNameLine = QLineEdit()
-            newSupplierNameLine.setFixedWidth(250)
-            newSupplierNameLine.setPlaceholderText('Имя нового поставщика')
-            newSupplierNameLine.setMaxLength(45)
+            self.newSupplierNameLine = QLineEdit()
+            self.newSupplierNameLine.setFixedWidth(250)
+            self.newSupplierNameLine.setPlaceholderText('Имя нового поставщика')
+            self.newSupplierNameLine.setMaxLength(45)
 
             newSupplierNameLayout.addWidget(newSupplierNameLabel, alignment=Qt.AlignmentFlag.AlignCenter)
-            newSupplierNameLayout.addWidget(newSupplierNameLine, alignment=Qt.AlignmentFlag.AlignCenter)
+            newSupplierNameLayout.addWidget(self.newSupplierNameLine, alignment=Qt.AlignmentFlag.AlignCenter)
             newSupplierNameLayout.addStretch()
             newSupplierLayout.addLayout(newSupplierNameLayout)
 
@@ -208,14 +211,14 @@ class ShipmentsWindow(BaseWindow):
 
             newSupplierPhoneLabel = QLabel('Номер телефона: ')
             newSupplierPhoneLabel.setFixedWidth(150)
-            newSupplierPhoneLine = QLineEdit()
-            newSupplierPhoneLine.setFixedWidth(250)
-            newSupplierPhoneLine.setPlaceholderText('Телефон нового поставщика')
-            newSupplierPhoneLine.setMaxLength(20)
-            newSupplierPhoneLine.setValidator(QRegularExpressionValidator(QRegularExpression(r'^\d*$')))
+            self.newSupplierPhoneLine = QLineEdit()
+            self.newSupplierPhoneLine.setFixedWidth(250)
+            self.newSupplierPhoneLine.setPlaceholderText('Телефон нового поставщика')
+            self.newSupplierPhoneLine.setMaxLength(20)
+            self.newSupplierPhoneLine.setValidator(QRegularExpressionValidator(QRegularExpression(r'^\d*$')))
 
             newSupplierPhoneLayout.addWidget(newSupplierPhoneLabel, alignment=Qt.AlignmentFlag.AlignCenter)
-            newSupplierPhoneLayout.addWidget(newSupplierPhoneLine, alignment=Qt.AlignmentFlag.AlignCenter)
+            newSupplierPhoneLayout.addWidget(self.newSupplierPhoneLine, alignment=Qt.AlignmentFlag.AlignCenter)
             newSupplierPhoneLayout.addStretch()
             newSupplierLayout.addLayout(newSupplierPhoneLayout)
 
@@ -224,13 +227,13 @@ class ShipmentsWindow(BaseWindow):
 
             newSupplierEmailLabel = QLabel('Почта: ')
             newSupplierEmailLabel.setFixedWidth(150)
-            newSupplierEmailLine = QLineEdit()
-            newSupplierEmailLine.setFixedWidth(250)
-            newSupplierEmailLine.setPlaceholderText('Электронная почта')
-            newSupplierEmailLine.setMaxLength(45)
+            self.newSupplierEmailLine = QLineEdit()
+            self.newSupplierEmailLine.setFixedWidth(250)
+            self.newSupplierEmailLine.setPlaceholderText('Электронная почта')
+            self.newSupplierEmailLine.setMaxLength(45)
 
             newSupplierEmailLayout.addWidget(newSupplierEmailLabel, alignment=Qt.AlignmentFlag.AlignCenter)
-            newSupplierEmailLayout.addWidget(newSupplierEmailLine, alignment=Qt.AlignmentFlag.AlignCenter)
+            newSupplierEmailLayout.addWidget(self.newSupplierEmailLine, alignment=Qt.AlignmentFlag.AlignCenter)
             newSupplierEmailLayout.addStretch()
             newSupplierLayout.addLayout(newSupplierEmailLayout)
             newSupplierLayout.addSpacing(15)
@@ -307,9 +310,37 @@ class ShipmentsWindow(BaseWindow):
 
     def handle_add_new_supplier(self):
         """Обработка нажатия на кнопку добавления поставщика"""
-        pass
+        newSupplierName = self.newSupplierNameLine.text().strip()
+        newSupplierPhone = self.newSupplierPhoneLine.text().strip()
+        newSupplierEmail = self.newSupplierEmailLine.text().strip()
+
+        # Валидация
+        if not newSupplierName:
+            QMessageBox.warning(self, 'Ошибка', 'Введите имя поставщика')
+            return None
+        if not newSupplierPhone:
+            QMessageBox.warning(self, 'Ошибка', 'Введите номер телефона поставщика')
+            return None
+        if not newSupplierEmail:
+            QMessageBox.warning(self, 'Ошибка', 'Введите email поставщика')
+            return None
+        if not re.match(r"^[\w\.-]+@[\w\.-]+\.\w+$", newSupplierEmail):
+            QMessageBox.warning(self, 'Ошибка', 'Введен некорректный email')
+            return None
+
+        res = add_new_supplier(newSupplierName, newSupplierPhone, newSupplierEmail)
+        if res['success']:
+            QMessageBox.information(self,'Успех', res['data'])
+            self.newSupplierNameLine.clear()
+            self.newSupplierPhoneLine.clear()
+            self.newSupplierEmailLine.clear()
+            self.update_suppliers_table()
+            return None
+        QMessageBox.warning(self,'Ошибка', res['data'])
+        return None
 
     def update_suppliers_table(self):
         """Обновление таблицы с поставщиками"""
         newSuppliersData = get_suppliers_data()['data']
-        self.shipmentsModel.update_data(newSuppliersData)
+        self.suppliersModel.update_data(newSuppliersData)
+
