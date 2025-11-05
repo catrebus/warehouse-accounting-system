@@ -2,11 +2,13 @@ from PyQt6.QtCore import QSize, Qt, QRegularExpression
 from PyQt6.QtGui import QColor, QRegularExpressionValidator
 from PyQt6.QtWidgets import QLabel, QWidget, QWIDGETSIZE_MAX, QVBoxLayout, QStackedLayout, QFrame, \
     QGraphicsDropShadowEffect, QHBoxLayout, QComboBox, QPushButton, QMessageBox, QScrollArea, QTableView, QHeaderView, \
-    QLineEdit
+    QLineEdit, QDialog
 
-from services.shipments_service import get_suppliers_name, get_suppliers_data, get_shipments_data
+from services.shipments_service import get_suppliers_name, get_suppliers_data, get_shipments_data, get_users_warehouses
 from ui.base_window import BaseWindow
+from ui.ui_elements.create_new_shipment_window import CreateNewShipmentWindow
 from ui.ui_elements.nav_panel import NavPanel
+from ui.ui_elements.shipment_details_window import ShipmentDetailsWindow
 from ui.ui_elements.table_model import TableModel
 from utils.app_state import AppState
 
@@ -60,7 +62,7 @@ class ShipmentsWindow(BaseWindow):
         # Подложка под элементы
         self.newShipmentCard = QFrame()
         self.newShipmentCard.setObjectName('cardLogin')
-        self.newShipmentCard.setFixedSize(1000, 400)
+        self.newShipmentCard.setFixedSize(1000, 450)
 
         newShipmentLayout = QVBoxLayout(self.newShipmentCard)
         newShipmentLayout.setContentsMargins(15, 15, 15, 15)
@@ -78,19 +80,20 @@ class ShipmentsWindow(BaseWindow):
         newShipmentLayout.addSpacing(10)
 
         shipmentsHeaders = ['Id', 'Поставщик', 'Сотрудник', 'Склад', 'Дата']
-        shipmentsData = get_shipments_data()['data']
-        self.suppliersModel = TableModel(shipmentsData, shipmentsHeaders)
+        shipmentsData = get_shipments_data(self.user.warehouses)['data']
+        self.shipmentsModel = TableModel(shipmentsData, shipmentsHeaders)
 
         # Таблица поставок
-        shipmentsTable = QTableView()
-        shipmentsTable.verticalHeader().setVisible(False)
-        shipmentsTable.setModel(self.suppliersModel)
-        shipmentsTable.resizeColumnsToContents()
-        shipmentsTable.setAlternatingRowColors(True)
-        shipmentsTable.setSelectionBehavior(shipmentsTable.SelectionBehavior.SelectRows)
-        shipmentsTable.setFixedSize(700, 200)
-        shipmentsTable.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        newShipmentLayout.addWidget(shipmentsTable, alignment=Qt.AlignmentFlag.AlignCenter)
+        self.shipmentsTable = QTableView()
+        self.shipmentsTable.verticalHeader().setVisible(False)
+        self.shipmentsTable.setModel(self.shipmentsModel)
+        self.shipmentsTable.resizeColumnsToContents()
+        self.shipmentsTable.setAlternatingRowColors(True)
+        self.shipmentsTable.setSelectionBehavior(self.shipmentsTable.SelectionBehavior.SelectRows)
+        self.shipmentsTable.setFixedSize(700, 200)
+        self.shipmentsTable.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.shipmentsTable.doubleClicked.connect(self.open_shipment_details)
+        newShipmentLayout.addWidget(self.shipmentsTable, alignment=Qt.AlignmentFlag.AlignCenter)
         newShipmentLayout.addSpacing(10)
 
         # Заголовок элементов создания поставки
@@ -103,18 +106,38 @@ class ShipmentsWindow(BaseWindow):
         supplierSelectionLayout.addStretch()
 
         supplierSelectionLabel = QLabel('Поставщик: ')
+        supplierSelectionLabel.setFixedWidth(200)
         supplierSelectionLayout.addWidget(supplierSelectionLabel)
 
         self.supplierSelection = QComboBox()
+        self.supplierSelection.setFixedWidth(200)
         self.load_selectable_suppliers()
         supplierSelectionLayout.addWidget(self.supplierSelection)
 
         supplierSelectionLayout.addStretch()
         newShipmentLayout.addLayout(supplierSelectionLayout)
+        newShipmentLayout.addSpacing(10)
+
+        warehouseSelectionLayout = QHBoxLayout()
+        warehouseSelectionLayout.addStretch()
+
+        warehouseSelectionLabel = QLabel('Склад: ')
+        warehouseSelectionLabel.setFixedWidth(200)
+        warehouseSelectionLayout.addWidget(warehouseSelectionLabel)
+
+        self.warehouseSelection = QComboBox()
+        self.warehouseSelection.setFixedWidth(200)
+        self.load_selectable_warehouses()
+        warehouseSelectionLayout.addWidget(self.warehouseSelection)
+
+        warehouseSelectionLayout.addStretch()
+        newShipmentLayout.addLayout(warehouseSelectionLayout)
         newShipmentLayout.addSpacing(15)
+
 
         # Кнопка создания поставки
         createShipmentBtn = QPushButton('Создать')
+        createShipmentBtn.clicked.connect(self.handle_create_new_shipment)
         createShipmentBtn.setFixedWidth(300)
         newShipmentLayout.addWidget(createShipmentBtn, alignment=Qt.AlignmentFlag.AlignCenter)
 
@@ -126,7 +149,7 @@ class ShipmentsWindow(BaseWindow):
         if self.user.role in [1,3]:
             self.newSupplierCard = QFrame()
             self.newSupplierCard.setObjectName('cardLogin')
-            self.newSupplierCard.setFixedSize(1000, 420)
+            self.newSupplierCard.setFixedSize(1000, 450)
 
             newSupplierLayout = QVBoxLayout(self.newSupplierCard)
             newSupplierLayout.setContentsMargins(15, 15, 15, 15)
@@ -158,10 +181,11 @@ class ShipmentsWindow(BaseWindow):
             suppliersTable.setFixedSize(700, 200)
             suppliersTable.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
             newSupplierLayout.addWidget(suppliersTable, alignment=Qt.AlignmentFlag.AlignCenter)
+            newSupplierLayout.addSpacing(15)
 
             suppliersTableLabel = QLabel('Добавление нового поставщика')
             newSupplierLayout.addWidget(suppliersTableLabel, alignment=Qt.AlignmentFlag.AlignCenter)
-
+            newSupplierLayout.addSpacing(15)
 
             # Поля ввода данных о новом поставщике
             newSupplierNameLayout = QHBoxLayout() # Имя поставщика
@@ -209,6 +233,7 @@ class ShipmentsWindow(BaseWindow):
             newSupplierEmailLayout.addWidget(newSupplierEmailLine, alignment=Qt.AlignmentFlag.AlignCenter)
             newSupplierEmailLayout.addStretch()
             newSupplierLayout.addLayout(newSupplierEmailLayout)
+            newSupplierLayout.addSpacing(15)
 
             addNewSupplierBtn = QPushButton('Добавить')
             addNewSupplierBtn.clicked.connect(self.handle_add_new_supplier)
@@ -240,14 +265,51 @@ class ShipmentsWindow(BaseWindow):
         QMessageBox.warning(self, 'Ошибка', f'Ошибка в загрузке поставщиков: {suppliers['data']}')
         return None
 
+    def load_selectable_warehouses(self):
+        """Загрузка доступных пользователю складов в список для создания поставки"""
+        self.warehouseSelection.clear()
+        self.warehouseSelection.addItem('Выберите склад')
+        warehouses = get_users_warehouses()
+        if warehouses['success']:
+            for warehouseId, warehouseName in warehouses['data']:
+                self.warehouseSelection.addItem(warehouseName, warehouseId)
+            return None
+        QMessageBox.warning(self, 'Ошибка', f'Ошибка в загрузке складов: {warehouses["data"]}')
+        return None
+
+    def open_shipment_details(self, index):
+        """Открытие окна с содержанием поставки"""
+        row = index.row()
+        shipmentId = self.shipmentsTable.model().index(row, 0).data()
+
+        dialog = ShipmentDetailsWindow(shipmentId)
+        dialog.exec()
+
     def handle_create_new_shipment(self):
         """Обработка нажатия на кнопку создания поставки"""
-        pass
+        if self.supplierSelection.currentIndex() == 0:
+            QMessageBox.warning(self, 'Ошибка', 'Выберите поставщика')
+            return None
+        if self.warehouseSelection.currentIndex() == 0:
+            QMessageBox.warning(self, 'Ошибка', 'Выберите склад')
+            return None
+        supplierId = self.supplierSelection.currentData()
+        warehouseId = self.warehouseSelection.currentData()
+        dialog = CreateNewShipmentWindow(supplierId, warehouseId)
+        dialog.exec()
+        self.update_shipments_table()
+        return None
+
+    def update_shipments_table(self):
+        """Обновление таблицы поставок"""
+        newShipmentsData = get_shipments_data(self.user.warehouses)['data']
+        self.shipmentsModel.update_data(newShipmentsData)
 
     def handle_add_new_supplier(self):
+        """Обработка нажатия на кнопку добавления поставщика"""
         pass
 
     def update_suppliers_table(self):
         """Обновление таблицы с поставщиками"""
         newSuppliersData = get_suppliers_data()['data']
-        self.suppliersModel.update_data(newSuppliersData)
+        self.shipmentsModel.update_data(newSuppliersData)
