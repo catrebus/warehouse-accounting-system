@@ -50,9 +50,11 @@ def get_posts():
 
         return posts
 
-def get_warehouses():
+def get_warehouses(warehouses=None):
     with get_db_session() as session:
         stmt = select(Warehouse.id, Warehouse.name)
+        if warehouses:
+            stmt = stmt.where(Warehouse.id.in_(warehouses))
         warehouses = session.execute(stmt).all()
 
         return warehouses

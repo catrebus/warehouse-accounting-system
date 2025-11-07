@@ -344,3 +344,10 @@ class ShipmentsWindow(BaseWindow):
         newSuppliersData = get_suppliers_data()['data']
         self.suppliersModel.update_data(newSuppliersData)
 
+    def refresh(self):
+        self.update_shipments_table()
+        self.load_selectable_warehouses()
+        self.load_selectable_suppliers()
+        if self.user.role == 1:
+            self.update_suppliers_table()
+

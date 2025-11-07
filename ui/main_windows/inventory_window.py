@@ -595,6 +595,9 @@ class InventoryWindow(BaseWindow):
 
     def refresh(self):
         self.update_inventory_table()
-        self.update_product_table()
-        self.update_new_product_selection_data()
         self.update_product_selection_data()
+        if self.user.role in [1,3]:
+            self.update_new_product_selection_data()
+        if self.user.role == 1:
+            self.update_product_table()
+

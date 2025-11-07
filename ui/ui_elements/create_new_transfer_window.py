@@ -5,20 +5,24 @@ from PyQt6.QtWidgets import QVBoxLayout, QDialog, QPushButton, QTableWidget, QHB
 
 from services.inventory_service import get_inventory, get_all_product_and_ids
 from services.shipments_service import get_available_products, add_new_shipment
+from services.transfers_service import add_new_transfer
 
 
-class CreateNewShipmentWindow(QDialog):
-    """Диалоговое окно для создания новой поставки"""
-    def __init__(self, supplierId, warehouseId):
+class CreateNewTransferWindow(QDialog):
+    """Диалоговое окно для оформления перемещения"""
+    def __init__(self, fromWarehouseId, toWarehouseId):
         super().__init__()
 
-        self.supplierId = supplierId
-        self.warehouseId = warehouseId
+        self.fromWarehouseId = fromWarehouseId
+        self.toWarehouseId = toWarehouseId
+
         # Получение всех продуктов, доступных на выбранном складе
-        self.products = get_available_products(self.warehouseId)['data']
+        self.fromWarehouseProducts = get_available_products(self.fromWarehouseId)['data']
+        self.toWarehouseProducts = get_available_products(self.toWarehouseId)['data']
+        self.products =  list(set(self.fromWarehouseProducts) & set(self.toWarehouseProducts))
 
         # Настройка параметров окна
-        self.setWindowTitle("Создание поставки")
+        self.setWindowTitle("Оформление транспортировки")
         self.setWindowIcon(QIcon("assets/icons/app_icon.png"))
         self.setFixedSize(QSize(800, 400))
 
@@ -114,11 +118,10 @@ class CreateNewShipmentWindow(QDialog):
             addedProducts.add(pid)
 
             result.append((pid, int(qty)))
-        addingResult = add_new_shipment(self.supplierId, self.warehouseId, result)
+        addingResult = add_new_transfer(self.fromWarehouseId, self.toWarehouseId, result)
         if addingResult['success']:
             QMessageBox.information(self, 'Успех', addingResult['data'])
             self.close()
             return None
         QMessageBox.warning(self, 'Ошибка', addingResult['data'])
         return None
-

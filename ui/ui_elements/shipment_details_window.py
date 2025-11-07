@@ -27,12 +27,12 @@ class ShipmentDetailsWindow(QDialog):
 
         shipmentDetailsHeaders = ['Название товара', 'Количество']
         shipmentDetails = get_shipment_details(shipmentId)['data']
-        self.suppliersModel = TableModel(shipmentDetails, shipmentDetailsHeaders)
+        self.shipmentDetailsModel = TableModel(shipmentDetails, shipmentDetailsHeaders)
 
         # Таблица для поставщиков
         shipmentDetailsTable = QTableView()
         shipmentDetailsTable.verticalHeader().setVisible(False)
-        shipmentDetailsTable.setModel(self.suppliersModel)
+        shipmentDetailsTable.setModel(self.shipmentDetailsModel)
         shipmentDetailsTable.resizeColumnsToContents()
         shipmentDetailsTable.setAlternatingRowColors(True)
         shipmentDetailsTable.setSelectionBehavior(shipmentDetailsTable.SelectionBehavior.SelectRows)
