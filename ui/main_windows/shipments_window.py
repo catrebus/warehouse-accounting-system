@@ -4,7 +4,7 @@ from PyQt6.QtCore import QSize, Qt, QRegularExpression
 from PyQt6.QtGui import QColor, QRegularExpressionValidator
 from PyQt6.QtWidgets import QLabel, QWidget, QWIDGETSIZE_MAX, QVBoxLayout, QStackedLayout, QFrame, \
     QGraphicsDropShadowEffect, QHBoxLayout, QComboBox, QPushButton, QMessageBox, QScrollArea, QTableView, QHeaderView, \
-    QLineEdit, QDialog
+    QLineEdit
 
 from services.shipments_service import get_suppliers_name, get_suppliers_data, get_shipments_data, get_users_warehouses, \
     add_new_supplier
@@ -13,7 +13,6 @@ from ui.ui_elements.create_new_shipment_window import CreateNewShipmentWindow
 from ui.ui_elements.nav_panel import NavPanel
 from ui.ui_elements.shipment_details_window import ShipmentDetailsWindow
 from ui.ui_elements.table_model import TableModel
-from utils.app_state import AppState
 
 
 class ShipmentsWindow(BaseWindow):

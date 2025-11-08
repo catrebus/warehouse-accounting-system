@@ -51,11 +51,13 @@ class Supplier(Base):
     __tablename__ = 'supplier'
     __table_args__ = (
         Index('email_UNIQUE', 'email', unique=True),
+        Index('name_UNIQUE', 'name', unique=True),
+        Index('phone_number_UNIQUE', 'phone_number', unique=True)
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(45), nullable=False)
-    phone_number: Mapped[str] = mapped_column(String(45), nullable=False)
+    phone_number: Mapped[str] = mapped_column(String(20), nullable=False)
     email: Mapped[str] = mapped_column(String(45), nullable=False)
 
     shipment: Mapped[list['Shipment']] = relationship('Shipment', back_populates='supplier')
@@ -65,12 +67,13 @@ class Warehouse(Base):
     __tablename__ = 'warehouse'
     __table_args__ = (
         Index('address_UNIQUE', 'address', unique=True),
+        Index('name_UNIQUE', 'name', unique=True)
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     address: Mapped[str] = mapped_column(String(255), nullable=False)
-    floor_space: Mapped[str] = mapped_column(String(45), nullable=False)
+    floor_space: Mapped[int] = mapped_column(Integer, nullable=False)
 
     employee: Mapped[list['Employee']] = relationship('Employee', secondary='employee_warehouse', back_populates='warehouse')
     inventory: Mapped[list['Inventory']] = relationship('Inventory', back_populates='warehouse')

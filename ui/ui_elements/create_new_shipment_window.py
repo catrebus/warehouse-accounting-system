@@ -1,9 +1,8 @@
-from PyQt6.QtCore import QSize, Qt, QRegularExpression
+from PyQt6.QtCore import QSize, QRegularExpression
 from PyQt6.QtGui import QIcon, QRegularExpressionValidator
 from PyQt6.QtWidgets import QVBoxLayout, QDialog, QPushButton, QTableWidget, QHBoxLayout, QComboBox, QLineEdit, \
     QHeaderView, QMessageBox
 
-from services.inventory_service import get_inventory, get_all_product_and_ids
 from services.shipments_service import get_available_products, add_new_shipment
 
 

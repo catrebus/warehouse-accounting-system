@@ -3,14 +3,16 @@ import sys
 
 from PyQt6.QtGui import QFontDatabase, QFont
 from PyQt6.QtWidgets import QApplication, QStackedWidget
+from sqlalchemy import text
 
+from db.db_session import get_db_session
 from ui.main_windows.inventory_window import InventoryWindow
+from ui.main_windows.main_window import MainWindow
 from ui.main_windows.shipments_window import ShipmentsWindow
 from ui.main_windows.transfers_window import TransfersWindow
-from ui.reg_auth_windows.login_window import LoginWindow
-from ui.main_windows.main_window import MainWindow
-from ui.reg_auth_windows.register_window import RegisterWindow
 from ui.main_windows.user_controls_window import UserControlsWindow
+from ui.reg_auth_windows.login_window import LoginWindow
+from ui.reg_auth_windows.register_window import RegisterWindow
 from utils.app_state import AppState
 
 
@@ -162,22 +164,31 @@ class ResizableWindowManager(QStackedWidget):
 
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
+    isDbConnected = False
+    try:
+        with get_db_session() as session:
+            session.execute(text("select 1")).scalar()
+            isDbConnected = True
+            print('Подключение к базе данных установлено')
+    except Exception as e:
+        print('Отсутствует подключение к базе данных')
+    if isDbConnected:
+        app = QApplication(sys.argv)
 
-    # Применение шрифта
-    font_name = load_font()
-    if font_name:
-        print('Основной шрифт установлен')
-        app.setFont(QFont(font_name, 14))
+        # Применение шрифта
+        font_name = load_font()
+        if font_name:
+            print('Основной шрифт установлен')
+            app.setFont(QFont(font_name, 14))
 
-    # Применение стилей
-    app.setStyleSheet(load_stylesheets('styles/login.qss', 'styles/navigation_panel.qss'))
+        # Применение стилей
+        app.setStyleSheet(load_stylesheets('styles/login.qss', 'styles/navigation_panel.qss'))
 
-    # Создание менеджеров окон
-    regAuthWindowManager = FixedWindowManager()
-    mainWindowManager = ResizableWindowManager()
+        # Создание менеджеров окон
+        regAuthWindowManager = FixedWindowManager()
+        mainWindowManager = ResizableWindowManager()
 
-    # Активация менеджера окон
-    regAuthWindowManager.show()
+        # Активация менеджера окон
+        regAuthWindowManager.show()
 
-    sys.exit(app.exec())
+        sys.exit(app.exec())

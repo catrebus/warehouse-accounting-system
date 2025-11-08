@@ -1,9 +1,9 @@
 from sqlalchemy import select
 
 from db.db_session import get_db_session
-from db.models import InviteCode, UserAccount, Employee, t_employee_warehouse
-from utils.password_utils import hash_password, verify_password
+from db.models import InviteCode, UserAccount, t_employee_warehouse
 from utils.app_state import AppState, User
+from utils.password_utils import hash_password, verify_password
 
 
 def register_user(inviteCode: str, login: str, password: str) -> dict:
@@ -54,7 +54,8 @@ def authorize_user(login: str, password: str) -> dict:
         if userObj:
 
             if verify_password(password, userObj.password):
-
+                if not userObj.is_active:
+                    return {'success': False, 'message': 'Учетная запись деактивирована'}
                 stmt = select(t_employee_warehouse.c.warehouse_id).where(t_employee_warehouse.c.employee_id == userObj.employee_id)
                 warehouseIds = session.execute(stmt).scalars().all()
 

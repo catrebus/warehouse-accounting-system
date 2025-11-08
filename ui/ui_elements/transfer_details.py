@@ -2,7 +2,6 @@ from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QVBoxLayout, QDialog, QLabel, QTableView, QHeaderView, QPushButton
 
-from services.shipments_service import get_shipment_details
 from services.transfers_service import get_transfer_details
 from ui.ui_elements.table_model import TableModel
 

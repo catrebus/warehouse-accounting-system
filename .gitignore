@@ -208,7 +208,3 @@ __marimo__/
 
 #Config
 config_private.py
-
-# nav panels
-ui/navPanel2.py
-ui/navigation_panel.py

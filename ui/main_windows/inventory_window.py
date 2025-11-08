@@ -1,7 +1,7 @@
 from PyQt6.QtCore import QSize, Qt, QRegularExpression, QSortFilterProxyModel
 from PyQt6.QtGui import QColor, QRegularExpressionValidator
 from PyQt6.QtWidgets import QLabel, QWidget, QWIDGETSIZE_MAX, QVBoxLayout, QStackedLayout, QHBoxLayout, QTableView, \
-    QHeaderView, QFrame, QGraphicsDropShadowEffect, QScrollArea, QComboBox, QPushButton, QLineEdit, QMessageBox
+    QFrame, QGraphicsDropShadowEffect, QScrollArea, QComboBox, QPushButton, QLineEdit, QMessageBox
 
 from services.inventory_service import get_inventory, add_count, substract_count, get_all_products, \
     add_new_product_to_warehouse, del_product_from_warehouse, get_all_product_and_ids, add_product, del_product
