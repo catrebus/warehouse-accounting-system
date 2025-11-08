@@ -1,6 +1,7 @@
 from PyQt6.QtCore import QSize, Qt, QSortFilterProxyModel
+from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QLabel, QWidget, QWIDGETSIZE_MAX, QVBoxLayout, QStackedLayout, QHBoxLayout, QTableView, \
-    QHeaderView, QLineEdit, QComboBox, QPushButton, QScrollArea
+    QHeaderView, QLineEdit, QComboBox, QPushButton, QScrollArea, QFrame, QGraphicsDropShadowEffect
 
 from services.control_user_service import get_employees
 from services.info_from_db import get_users, get_roles, get_posts
@@ -129,27 +130,37 @@ class UserControlsWindow(BaseWindow):
         # Layout для контента страницы
         contentWidget = QWidget()
         contentLayout = QVBoxLayout(contentWidget)
-        contentLayout.setContentsMargins(50,10,0,10)
+        contentLayout.setContentsMargins(80,10,0,10)
         contentLayout.setSpacing(0)
 
         scrollArea = QScrollArea()
         scrollArea.setWidgetResizable(True)
         scrollArea.setWidget(contentWidget)
-        scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
-        # Заголовок страницы
-        titleLabel = QLabel("Контроль учетных записей")
+        titleLabel = QLabel("Хранилище")
         titleLabel.setFixedHeight(40)
         titleLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         contentLayout.addWidget(titleLabel, alignment=Qt.AlignmentFlag.AlignTop)
-        contentLayout.addSpacing(10)
 
         # Layout с информацией на странице
         infoLayout = QVBoxLayout()
-        infoLayout.setContentsMargins(50,20,50,20)
+        infoLayout.setContentsMargins(0,0,0,0)
 
         # Layout с элементами для работы с учетными записями
-        usersLayout = QVBoxLayout()
+
+        self.usersCard = QFrame()
+        self.usersCard.setObjectName('cardLogin')
+        self.usersCard.setFixedSize(1000, 500)
+
+        usersLayout = QVBoxLayout(self.usersCard)
+        usersLayout.setContentsMargins(15, 15, 15, 15)
+
+        cardEffect = QGraphicsDropShadowEffect()
+        cardEffect.setBlurRadius(30)
+        cardEffect.setXOffset(0)
+        cardEffect.setYOffset(4)
+        cardEffect.setColor(QColor(0, 0, 0, 120))
+        self.usersCard.setGraphicsEffect(cardEffect)
 
         # Заголовок элементов для работы с учетными записями
         usersLabel = QLabel("Учетные записи")
@@ -171,7 +182,6 @@ class UserControlsWindow(BaseWindow):
         usersTable = QTableView()
         usersTable.verticalHeader().setVisible(False)
         usersTable.setModel(self.usersFilterModel)
-        usersTable.resizeColumnsToContents()
         usersTable.setAlternatingRowColors(True)
         usersTable.setSelectionBehavior(usersTable.SelectionBehavior.SelectRows)
         usersTable.setFixedSize(620, 200)
@@ -242,12 +252,24 @@ class UserControlsWindow(BaseWindow):
         manageUserButton.clicked.connect(self.manage_user)
         usersLayout.addWidget(manageUserButton, alignment=Qt.AlignmentFlag.AlignCenter)
 
-
-        usersLayout.addSpacing(40)
-        infoLayout.addLayout(usersLayout)
+        infoLayout.addWidget(self.usersCard, alignment=Qt.AlignmentFlag.AlignCenter)
+        infoLayout.addSpacing(30)
 
         # Layout для элементов работы с сотрудниками
-        employeeLayout = QVBoxLayout()
+
+        self.employeesCard = QFrame()
+        self.employeesCard.setObjectName('cardLogin')
+        self.employeesCard.setFixedSize(1000, 500)
+
+        employeeLayout = QVBoxLayout(self.employeesCard)
+        employeeLayout.setContentsMargins(15, 15, 15, 15)
+
+        cardEffect = QGraphicsDropShadowEffect()
+        cardEffect.setBlurRadius(30)
+        cardEffect.setXOffset(0)
+        cardEffect.setYOffset(4)
+        cardEffect.setColor(QColor(0, 0, 0, 120))
+        self.employeesCard.setGraphicsEffect(cardEffect)
 
         # Заголовок элементов для работы с сотрудниками
         employeesLabel = QLabel("Сотрудники")
@@ -267,10 +289,9 @@ class UserControlsWindow(BaseWindow):
         employeesTable = QTableView()
         employeesTable.verticalHeader().setVisible(False)
         employeesTable.setModel(self.employeesFilterModel)
-        employeesTable.resizeColumnsToContents()
         employeesTable.setAlternatingRowColors(True)
         employeesTable.setSelectionBehavior(employeesTable.SelectionBehavior.SelectRows)
-        employeesTable.setFixedSize(800, 200)
+        employeesTable.setFixedSize(900, 200)
         employeesTable.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         employeeLayout.addWidget(employeesTable, alignment=Qt.AlignmentFlag.AlignCenter)
 
@@ -335,11 +356,24 @@ class UserControlsWindow(BaseWindow):
         manageEmployeeButton.clicked.connect(self.manage_employee)
         employeeLayout.addWidget(manageEmployeeButton, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        employeeLayout.addSpacing(40)
-        infoLayout.addLayout(employeeLayout)
+        infoLayout.addWidget(self.employeesCard, alignment=Qt.AlignmentFlag.AlignCenter)
+        infoLayout.addSpacing(30)
 
         # Создание пригласительного кода
-        inviteCodeLayout = QVBoxLayout()
+        self.inviteCodeCard = QFrame()
+        self.inviteCodeCard.setObjectName('cardLogin')
+        self.inviteCodeCard.setFixedSize(1000, 120)
+
+        inviteCodeLayout = QVBoxLayout(self.inviteCodeCard)
+        inviteCodeLayout.setContentsMargins(15, 15, 15, 15)
+
+        cardEffect = QGraphicsDropShadowEffect()
+        cardEffect.setBlurRadius(30)
+        cardEffect.setXOffset(0)
+        cardEffect.setYOffset(4)
+        cardEffect.setColor(QColor(0, 0, 0, 120))
+        self.inviteCodeCard.setGraphicsEffect(cardEffect)
+
         inviteCodeLabel = QLabel('Пригласительный код')
         inviteCodeLayout.addWidget(inviteCodeLabel, alignment=Qt.AlignmentFlag.AlignCenter)
         inviteCodeLayout.addSpacing(5)
@@ -348,8 +382,9 @@ class UserControlsWindow(BaseWindow):
         createInviteCodeBtn.setFixedSize(300, 50)
         createInviteCodeBtn.clicked.connect(self.create_invite_code)
         inviteCodeLayout.addWidget(createInviteCodeBtn, alignment=Qt.AlignmentFlag.AlignCenter)
+        inviteCodeLayout.addStretch()
 
-        infoLayout.addLayout(inviteCodeLayout)
+        infoLayout.addWidget(self.inviteCodeCard, alignment=Qt.AlignmentFlag.AlignCenter)
         infoLayout.addStretch()
 
         contentLayout.addLayout(infoLayout)

@@ -1,7 +1,7 @@
 from PyQt6.QtCore import QSize, Qt, QRegularExpression, QSortFilterProxyModel
 from PyQt6.QtGui import QColor, QRegularExpressionValidator
 from PyQt6.QtWidgets import QLabel, QWidget, QWIDGETSIZE_MAX, QVBoxLayout, QStackedLayout, QHBoxLayout, QTableView, \
-    QFrame, QGraphicsDropShadowEffect, QScrollArea, QComboBox, QPushButton, QLineEdit, QMessageBox
+    QFrame, QGraphicsDropShadowEffect, QScrollArea, QComboBox, QPushButton, QLineEdit, QMessageBox, QHeaderView
 
 from services.inventory_service import get_inventory, add_count, substract_count, get_all_products, \
     add_new_product_to_warehouse, del_product_from_warehouse, get_all_product_and_ids, add_product, del_product
@@ -117,15 +117,17 @@ class InventoryWindow(BaseWindow):
         inventoryTable = QTableView()
         inventoryTable.verticalHeader().setVisible(False)
         inventoryTable.setModel(self.inventoryFilterModel)
-        inventoryTable.resizeColumnsToContents()
         inventoryTable.setAlternatingRowColors(True)
         inventoryTable.setSelectionBehavior(inventoryTable.SelectionBehavior.SelectRows)
-        inventoryTable.setFixedSize(615, 200)
+        inventoryTable.setFixedSize(616, 200)
         inventoryTable.setColumnWidth(0, 200)
         inventoryTable.setColumnWidth(1, 100)
         inventoryTable.setColumnWidth(2, 100)
         inventoryTable.setColumnWidth(3, 200)
+        inventoryTable.horizontalHeader().setSectionsMovable(False)
+        inventoryTable.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
         inventoryLayout.addWidget(inventoryTable, alignment=Qt.AlignmentFlag.AlignCenter)
+
 
         # Layout для элементов фильтрации
         inventoryFilterLayout = QVBoxLayout()
@@ -329,12 +331,13 @@ class InventoryWindow(BaseWindow):
             productsTable = QTableView()
             productsTable.verticalHeader().setVisible(False)
             productsTable.setModel(self.productsModel)
-            productsTable.resizeColumnsToContents()
             productsTable.setAlternatingRowColors(True)
             productsTable.setSelectionBehavior(productsTable.SelectionBehavior.SelectRows)
-            productsTable.setFixedSize(515, 200)
-            productsTable.setColumnWidth(0, 100)
-            productsTable.setColumnWidth(1, 400)
+            productsTable.setFixedSize(516, 200)
+            productsTable.setColumnWidth(0, 40)
+            productsTable.setColumnWidth(1, 460)
+            productsTable.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
+            productsTable.horizontalHeader().setSectionsMovable(False)
 
             newProductLayout.addWidget(productsTable, alignment=Qt.AlignmentFlag.AlignCenter)
             newProductLayout.addSpacing(10)

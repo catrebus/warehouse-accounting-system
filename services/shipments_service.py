@@ -15,7 +15,7 @@ def get_shipments_data(warehouses=None):
                 .join(Supplier, Supplier.id == Shipment.supplier_id)\
                 .join(Employee, Employee.id == Shipment.employee_id)\
                 .join(Warehouse, Warehouse.id == Shipment.warehouse_id)\
-                .order_by(Shipment.date.desc())
+                .order_by(Shipment.id.desc())
             if warehouses:
                 stmt = stmt.where(Shipment.warehouse_id.in_(warehouses))
             shipments = session.execute(stmt).all()

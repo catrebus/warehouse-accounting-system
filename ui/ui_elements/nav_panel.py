@@ -1,5 +1,5 @@
 from PyQt6.QtCore import Qt, QEasingCurve, QPropertyAnimation, pyqtSignal
-from PyQt6.QtGui import QPixmap
+from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6.QtWidgets import QFrame, QVBoxLayout, QLabel, QWidget, QScrollArea, QPushButton, QHBoxLayout
 
 from utils.app_state import AppState
@@ -139,7 +139,10 @@ class NavPanel(QFrame):
         self.btnLayout.addStretch()
 
         # Кнопка выхода
-        self.exitButton = QPushButton('🚪')
+        self.exitButton = QPushButton()
+        icon = QPixmap('assets/icons/exit_icon.png')
+        icon = icon.scaled(30, 30, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        self.exitButton.setIcon(QIcon(icon))
         self.exitButton.setCursor(Qt.CursorShape.PointingHandCursor)
         self.exitButton.setObjectName('navPanelExitButton')
         self.exitButton.clicked.connect(lambda: (self.window() and self.window().close()))

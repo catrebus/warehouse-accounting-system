@@ -50,7 +50,6 @@ class TransfersWindow(BaseWindow):
         scrollArea = QScrollArea()
         scrollArea.setWidgetResizable(True)
         scrollArea.setWidget(contentWidget)
-        scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         # Заголовок
         titleLabel = QLabel("Перемещения")
@@ -88,11 +87,16 @@ class TransfersWindow(BaseWindow):
         self.transfersTable = QTableView()
         self.transfersTable.verticalHeader().setVisible(False)
         self.transfersTable.setModel(self.transfersModel)
-        self.transfersTable.resizeColumnsToContents()
         self.transfersTable.setAlternatingRowColors(True)
         self.transfersTable.setSelectionBehavior(self.transfersTable.SelectionBehavior.SelectRows)
-        self.transfersTable.setFixedSize(700, 200)
-        self.transfersTable.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.transfersTable.setFixedSize(706, 200)
+        self.transfersTable.setColumnWidth(0, 40)
+        self.transfersTable.setColumnWidth(1, 150)
+        self.transfersTable.setColumnWidth(2, 150)
+        self.transfersTable.setColumnWidth(3, 200)
+        self.transfersTable.setColumnWidth(4, 150)
+        self.transfersTable.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
+        self.transfersTable.horizontalHeader().setSectionsMovable(False)
         self.transfersTable.doubleClicked.connect(self.open_transfer_details)
         newTransferLayout.addWidget(self.transfersTable, alignment=Qt.AlignmentFlag.AlignCenter)
         newTransferLayout.addSpacing(10)
@@ -171,18 +175,19 @@ class TransfersWindow(BaseWindow):
             warehousesData = get_warehouses_data()['data']
             self.warehousesModel = TableModel(warehousesData, warehousesHeaders)
 
-            # Таблица для поставщиков
+            # Таблица для складов
             warehousesTable = QTableView()
             warehousesTable.verticalHeader().setVisible(False)
             warehousesTable.setModel(self.warehousesModel)
-            warehousesTable.resizeColumnsToContents()
             warehousesTable.setAlternatingRowColors(True)
             warehousesTable.setSelectionBehavior(warehousesTable.SelectionBehavior.SelectRows)
-            warehousesTable.setFixedSize(700, 200)
+            warehousesTable.setFixedSize(706, 200)
             warehousesTable.setColumnWidth(0, 40)
             warehousesTable.setColumnWidth(1, 150)
             warehousesTable.setColumnWidth(2, 430)
             warehousesTable.setColumnWidth(3, 70)
+            warehousesTable.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
+            warehousesTable.horizontalHeader().setSectionsMovable(False)
             newWarehouseLayout.addWidget(warehousesTable, alignment=Qt.AlignmentFlag.AlignCenter)
             newWarehouseLayout.addSpacing(15)
 

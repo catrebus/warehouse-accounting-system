@@ -1,7 +1,8 @@
 import os
 import sys
 
-from PyQt6.QtGui import QFontDatabase, QFont
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QFontDatabase, QFont, QPalette, QColor
 from PyQt6.QtWidgets import QApplication, QStackedWidget
 from sqlalchemy import text
 
@@ -22,6 +23,7 @@ def load_stylesheets(*files):
     for file in files:
         with open(file, 'r', encoding='utf-8') as f:
             content+=f.read() + '\n'
+    print('Стили загружены')
     return content
 
 
@@ -36,9 +38,6 @@ def load_font():
             font_id = QFontDatabase.addApplicationFont(path)
             if font_id == -1:
                 print(f"Не удалось загрузить: {file}")
-            else:
-                families = QFontDatabase.applicationFontFamilies(font_id)
-                print(f"Загружен шрифт: {families[0]} из {file}")
 
     # Список всех доступных шрифтов
     all_fonts = QFontDatabase.families()
@@ -48,6 +47,27 @@ def load_font():
         if "Ubuntu Mono" in name:
             return name
     return None
+
+# Загрузка темы
+def load_theme():
+    palette = QPalette()
+
+    palette.setColor(QPalette.ColorRole.Window, QColor(32, 32, 32))
+    palette.setColor(QPalette.ColorRole.WindowText, Qt.GlobalColor.white)
+    palette.setColor(QPalette.ColorRole.Base, QColor(24, 24, 24))
+    palette.setColor(QPalette.ColorRole.AlternateBase, QColor(42, 42, 42))
+    palette.setColor(QPalette.ColorRole.ToolTipBase, Qt.GlobalColor.white)
+    palette.setColor(QPalette.ColorRole.ToolTipText, Qt.GlobalColor.white)
+
+    palette.setColor(QPalette.ColorRole.Text, Qt.GlobalColor.white)
+    palette.setColor(QPalette.ColorRole.Button, QColor(50, 50, 50))
+    palette.setColor(QPalette.ColorRole.ButtonText, Qt.GlobalColor.white)
+    palette.setColor(QPalette.ColorRole.PlaceholderText, QColor(180, 180, 180))
+
+    palette.setColor(QPalette.ColorRole.Highlight, QColor(0, 120, 215))
+    palette.setColor(QPalette.ColorRole.HighlightedText, Qt.GlobalColor.white)
+
+    return palette
 
 
 # Контроль всех окон приложения
@@ -60,11 +80,9 @@ class FixedWindowManager(QStackedWidget):
         self.loginWindow = LoginWindow()
         self.registerWindow = RegisterWindow()
 
-
         # Добавление окон в менеджер
         self.addWidget(self.loginWindow)
         self.addWidget(self.registerWindow)
-
 
         # Подключение сигналов
         self.loginWindow.switchToRegister.connect(lambda: self.show_register(self.registerWindow))
@@ -174,6 +192,10 @@ if __name__ == "__main__":
         print('Отсутствует подключение к базе данных')
     if isDbConnected:
         app = QApplication(sys.argv)
+
+        # Установка основных цветов приложения
+        app.setStyle("Fusion")
+        app.setPalette(load_theme())
 
         # Применение шрифта
         font_name = load_font()
