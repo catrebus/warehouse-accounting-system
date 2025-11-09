@@ -254,7 +254,7 @@ class TransferLine(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     transfer_id: Mapped[int] = mapped_column(Integer, nullable=False)
     product_id: Mapped[int] = mapped_column(Integer, nullable=False)
-    quantity: Mapped[str] = mapped_column(String(45), nullable=False)
+    quantity: Mapped[int] = mapped_column(Integer, nullable=False)
 
     product: Mapped['Product'] = relationship('Product', back_populates='transfer_line')
     transfer: Mapped['Transfer'] = relationship('Transfer', back_populates='transfer_line')
