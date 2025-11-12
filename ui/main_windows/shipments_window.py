@@ -115,7 +115,7 @@ class ShipmentsWindow(BaseWindow):
         supplierSelectionLayout.addWidget(supplierSelectionLabel)
 
         self.supplierSelection = QComboBox()
-        self.supplierSelection.setFixedWidth(200)
+        self.supplierSelection.setFixedWidth(220)
         self.load_selectable_suppliers()
         supplierSelectionLayout.addWidget(self.supplierSelection)
 
@@ -131,7 +131,7 @@ class ShipmentsWindow(BaseWindow):
         warehouseSelectionLayout.addWidget(warehouseSelectionLabel)
 
         self.warehouseSelection = QComboBox()
-        self.warehouseSelection.setFixedWidth(200)
+        self.warehouseSelection.setFixedWidth(220)
         self.load_selectable_warehouses()
         warehouseSelectionLayout.addWidget(self.warehouseSelection)
 

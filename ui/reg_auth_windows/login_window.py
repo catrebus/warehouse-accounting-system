@@ -118,7 +118,10 @@ class LoginWindow(BaseWindow):
         """Левая часть окна"""
         iconLabel = QLabel()
         padlockIcon = QPixmap('assets/icons/padlock_icon.png')
-        padlockIcon = padlockIcon.scaled(360, 360, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        padlockIcon = padlockIcon.scaled(360,
+                                         360,
+                                         Qt.AspectRatioMode.KeepAspectRatio,
+                                         Qt.TransformationMode.SmoothTransformation)
         iconLabel.setPixmap(padlockIcon)
         iconLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         leftLayout = QHBoxLayout()

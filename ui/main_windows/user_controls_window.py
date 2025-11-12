@@ -137,7 +137,7 @@ class UserControlsWindow(BaseWindow):
         scrollArea.setWidgetResizable(True)
         scrollArea.setWidget(contentWidget)
 
-        titleLabel = QLabel("Хранилище")
+        titleLabel = QLabel("Управление учетными записями")
         titleLabel.setFixedHeight(40)
         titleLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         contentLayout.addWidget(titleLabel, alignment=Qt.AlignmentFlag.AlignTop)

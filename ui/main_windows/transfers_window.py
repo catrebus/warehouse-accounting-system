@@ -114,7 +114,7 @@ class TransfersWindow(BaseWindow):
         fromWarehouseSelectionLayout.addWidget(fromWarehouseSelectionLabel)
 
         self.fromWarehouseSelection = QComboBox()
-        self.fromWarehouseSelection.setFixedWidth(200)
+        self.fromWarehouseSelection.setFixedWidth(220)
         self.load_from_warehouse()
         self.fromWarehouseSelection.currentTextChanged.connect(self.load_to_warehouse)
         fromWarehouseSelectionLayout.addWidget(self.fromWarehouseSelection)
@@ -131,7 +131,7 @@ class TransfersWindow(BaseWindow):
         toWarehouseSelectionLayout.addWidget(toWarehouseSelectionLabel)
 
         self.toWarehouseSelection = QComboBox()
-        self.toWarehouseSelection.setFixedWidth(200)
+        self.toWarehouseSelection.setFixedWidth(220)
         self.load_to_warehouse()
         toWarehouseSelectionLayout.addWidget(self.toWarehouseSelection)
 

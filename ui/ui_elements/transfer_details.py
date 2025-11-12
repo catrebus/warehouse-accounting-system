@@ -1,3 +1,4 @@
+from PyQt6 import QtCore
 from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QVBoxLayout, QDialog, QLabel, QTableView, QHeaderView, QPushButton
@@ -46,6 +47,7 @@ class TransferDetailsWindow(QDialog):
         exitBtn.setFixedSize(200,40)
         exitBtn.clicked.connect(self.close)
         mainLayout.addWidget(exitBtn, alignment=Qt.AlignmentFlag.AlignCenter)
+        exitBtn.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
 
         self.setLayout(mainLayout)
 

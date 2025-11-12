@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import QLabel, QWidget, QWIDGETSIZE_MAX, QVBoxLayout, QStac
 
 from services.inventory_service import get_inventory, add_count, substract_count, get_all_products, \
     add_new_product_to_warehouse, del_product_from_warehouse, get_all_product_and_ids, add_product, del_product
+from services.shipments_service import get_users_warehouses
 from ui.base_window import BaseWindow
 from ui.ui_elements.nav_panel import NavPanel
 from ui.ui_elements.table_model import TableModel
@@ -142,14 +143,7 @@ class InventoryWindow(BaseWindow):
         # Фильтрация по складу
         self.warehouseFilter = QComboBox()
         self.warehouseFilter.setFixedSize(620, 30)
-        self.warehouseFilter.addItem("Все склады")
 
-        warehouseList = []
-        for warehouse in inventoryData:
-            warehouseList.append(warehouse[1])
-        warehouseList = list(set(warehouseList))
-
-        self.warehouseFilter.addItems(warehouseList)
         self.warehouseFilter.currentTextChanged.connect(self.update_inventory_filters)
         inventoryFilterLayout.addWidget(self.warehouseFilter, alignment=Qt.AlignmentFlag.AlignCenter)
 
@@ -170,8 +164,7 @@ class InventoryWindow(BaseWindow):
 
         self.warehouseSelection = QComboBox()
         self.warehouseSelection.setFixedWidth(400)
-        self.warehouseSelection.addItem('Выберите склад')
-        self.warehouseSelection.addItems(warehouseList)
+        self.load_warehouses_for_quantity_manupulation()
         self.warehouseSelection.currentTextChanged.connect(self.update_product_selection_data)
 
         warehouseSelectionLayout.addWidget(warehouseSelectionLabel)
@@ -261,8 +254,7 @@ class InventoryWindow(BaseWindow):
             toWarehouseLabel = QLabel('Склад: ')
             toWarehouseLabel.setFixedWidth(110)
             self.toWarehouseSelection = QComboBox()
-            self.toWarehouseSelection.addItem('Выберите склад')
-            self.toWarehouseSelection.addItems(warehouseList)
+            self.load_selectable_warehouses()
             toWarehouseLayout.addWidget(toWarehouseLabel)
             toWarehouseLayout.addWidget(self.toWarehouseSelection)
 
@@ -424,6 +416,32 @@ class InventoryWindow(BaseWindow):
         self.inventoryFilterModel.warehouseFilter = self.warehouseFilter.currentText()
         self.inventoryFilterModel.invalidateFilter()
 
+    def load_selectable_warehouses(self):
+        """Загрузка доступных пользователю складов для добавления товара на склад"""
+        self.toWarehouseSelection.clear()
+        self.toWarehouseSelection.addItem('Выберите склад')
+        warehouses = get_users_warehouses()
+        if warehouses['success']:
+            for warehouseId, warehouseName in warehouses['data']:
+                self.toWarehouseSelection.addItem(warehouseName, warehouseId)
+            return None
+        QMessageBox.warning(self, 'Ошибка', f'Ошибка в загрузке складов: {warehouses["data"]}')
+        return None
+
+    def load_warehouses_for_quantity_manupulation(self):
+        warehouseList = []
+        for warehouse in get_inventory(AppState.currentUser.warehouses):
+            warehouseList.append(warehouse[1])
+        warehouseList = list(set(warehouseList))
+
+        self.warehouseSelection.clear()
+        self.warehouseSelection.addItem('Выберите склад')
+        self.warehouseSelection.addItems(warehouseList)
+
+        self.warehouseFilter.clear()
+        self.warehouseFilter.addItem("Все склады")
+        self.warehouseFilter.addItems(warehouseList)
+
     def add_product_count(self):
         if self.warehouseSelection.currentIndex() == 0:
             QMessageBox.warning(self, 'Ошибка', 'Выберите склад')
@@ -527,6 +545,7 @@ class InventoryWindow(BaseWindow):
                 QMessageBox.information(self, 'Успех', res['message'])
                 self.update_inventory_table()
                 self.update_product_selection_data()
+                self.load_warehouses_for_quantity_manupulation()
                 return None
             QMessageBox.warning(self, 'Ошибка', res['message'])
         except Exception as e:
@@ -600,6 +619,7 @@ class InventoryWindow(BaseWindow):
         self.update_inventory_table()
         self.update_product_selection_data()
         if self.user.role in [1,3]:
+            self.load_selectable_warehouses()
             self.update_new_product_selection_data()
         if self.user.role == 1:
             self.update_product_table()
