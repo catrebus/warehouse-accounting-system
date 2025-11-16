@@ -13,6 +13,7 @@ from ui.ui_elements.create_new_shipment_window import CreateNewShipmentWindow
 from ui.ui_elements.nav_panel import NavPanel
 from ui.ui_elements.shipment_details_window import ShipmentDetailsWindow
 from ui.ui_elements.table_model import TableModel
+from utils.export_to_excel import exportToExcel
 
 
 class ShipmentsWindow(BaseWindow):
@@ -64,7 +65,7 @@ class ShipmentsWindow(BaseWindow):
         # Подложка под элементы
         self.newShipmentCard = QFrame()
         self.newShipmentCard.setObjectName('cardLogin')
-        self.newShipmentCard.setFixedSize(1000, 450)
+        self.newShipmentCard.setFixedSize(1000, 480)
 
         newShipmentLayout = QVBoxLayout(self.newShipmentCard)
         newShipmentLayout.setContentsMargins(15, 15, 15, 15)
@@ -99,6 +100,12 @@ class ShipmentsWindow(BaseWindow):
         self.shipmentsTable.setColumnWidth(4, 150)
         self.shipmentsTable.doubleClicked.connect(self.open_shipment_details)
         newShipmentLayout.addWidget(self.shipmentsTable, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        generateReport = QPushButton("Сгенерировать отчет")
+        generateReport.clicked.connect(lambda: exportToExcel(self.shipmentsModel))
+        generateReport.setFixedSize(706, 30)
+        newShipmentLayout.addWidget(generateReport, alignment=Qt.AlignmentFlag.AlignCenter)
+
         newShipmentLayout.addSpacing(10)
 
         # Заголовок элементов создания поставки

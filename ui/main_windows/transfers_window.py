@@ -10,6 +10,7 @@ from ui.ui_elements.create_new_transfer_window import CreateNewTransferWindow
 from ui.ui_elements.nav_panel import NavPanel
 from ui.ui_elements.table_model import TableModel
 from ui.ui_elements.transfer_details import TransferDetailsWindow
+from utils.export_to_excel import exportToExcel
 
 
 class TransfersWindow(BaseWindow):
@@ -61,7 +62,7 @@ class TransfersWindow(BaseWindow):
         # Подложка под элементы
         self.newTransferCard = QFrame()
         self.newTransferCard.setObjectName('cardLogin')
-        self.newTransferCard.setFixedSize(1000, 450)
+        self.newTransferCard.setFixedSize(1000, 480)
 
         newTransferLayout = QVBoxLayout(self.newTransferCard)
         newTransferLayout.setContentsMargins(15, 15, 15, 15)
@@ -99,6 +100,12 @@ class TransfersWindow(BaseWindow):
         self.transfersTable.horizontalHeader().setSectionsMovable(False)
         self.transfersTable.doubleClicked.connect(self.open_transfer_details)
         newTransferLayout.addWidget(self.transfersTable, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        generateReport = QPushButton("Сгенерировать отчет")
+        generateReport.clicked.connect(lambda: exportToExcel(self.transfersModel))
+        generateReport.setFixedSize(706, 30)
+        newTransferLayout.addWidget(generateReport, alignment=Qt.AlignmentFlag.AlignCenter)
+
         newTransferLayout.addSpacing(10)
 
         # Оформление транспортировки

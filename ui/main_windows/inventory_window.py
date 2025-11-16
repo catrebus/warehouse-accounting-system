@@ -10,6 +10,7 @@ from ui.base_window import BaseWindow
 from ui.ui_elements.nav_panel import NavPanel
 from ui.ui_elements.table_model import TableModel
 from utils.app_state import AppState
+from utils.export_to_excel import exportToExcel
 
 
 class MultiFilterProxyModelInventory(QSortFilterProxyModel):
@@ -87,7 +88,7 @@ class InventoryWindow(BaseWindow):
         # Создание подложки для элементов управления
         self.inventoryCard = QFrame()
         self.inventoryCard.setObjectName('cardLogin')
-        self.inventoryCard.setFixedSize(1000, 500)
+        self.inventoryCard.setFixedSize(1000, 540)
 
         inventoryLayout = QVBoxLayout(self.inventoryCard)
         inventoryLayout.setContentsMargins(15, 15, 15, 15)
@@ -148,6 +149,12 @@ class InventoryWindow(BaseWindow):
         inventoryFilterLayout.addWidget(self.warehouseFilter, alignment=Qt.AlignmentFlag.AlignCenter)
 
         inventoryLayout.addLayout(inventoryFilterLayout)
+
+        generateReport = QPushButton("Сгенерировать отчет")
+        generateReport.clicked.connect(lambda: exportToExcel(inventoryModel))
+        generateReport.setFixedSize(620, 30)
+        inventoryLayout.addWidget(generateReport, alignment=Qt.AlignmentFlag.AlignCenter)
+
         inventoryLayout.addSpacing(10)
 
         # Layout для элементов управления количеством
