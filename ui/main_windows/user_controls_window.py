@@ -277,7 +277,8 @@ class UserControlsWindow(BaseWindow):
         employeeLayout.addSpacing(5)
 
         # Данные для таблицы с сотрудниками
-        employeeHeaders = ["id", "Имя", "Фамилия", "Серия\nпаспорта", "Номер\nпаспорта", "Телефон", "Должность", "Дата", "Работает"]
+        employeeHeaders = ["id", "Имя", "Фамилия", "Серия\nпаспорта",
+                           "Номер\nпаспорта", "Телефон", "Должность", "Дата", "Работает"]
         employeesData = get_employees()
         employeesModel = TableModel(employeesData, employeeHeaders)
 

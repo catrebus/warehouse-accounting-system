@@ -119,11 +119,11 @@ class NavPanel(QFrame):
 
         # Данные для кнопок
         buttonsData = [
-            ('assets/icons/main_page.png', 'Главная страница', 'Описание 1', self.switchToMainPage, [1,2,3,4]),
-            ('assets/icons/inventory_page.png', 'Хранилище', 'Описание 2', self.switchToInventory, [1,2,3,4]),
-            ('assets/icons/shipments_page.png', 'Поставки', 'Описание 3', self.switchToShipments, [1,2,3,4]),
-            ('assets/icons/transfers_page.png', 'Перемещения', 'Описание 4', self.switchToTransfers, [1,2,3,4]),
-            ('assets/icons/user_controls_page.png', 'Контроль учетных \nзаписей', 'Описание 5', self.switchToUserControls, [1]),
+            ('assets/icons/main_page.png', 'Главная страница', '', self.switchToMainPage, [1,2,3,4]),
+            ('assets/icons/inventory_page.png', 'Хранилище', '', self.switchToInventory, [1,2,3,4]),
+            ('assets/icons/shipments_page.png', 'Поставки', '', self.switchToShipments, [1,2,3,4]),
+            ('assets/icons/transfers_page.png', 'Перемещения', '', self.switchToTransfers, [1,2,3,4]),
+            ('assets/icons/user_controls_page.png', 'Контроль учетных \nзаписей', '', self.switchToUserControls, [1]),
         ]
 
         # Стек кнопок

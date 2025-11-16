@@ -40,7 +40,8 @@ def register_user(inviteCode: str, login: str, password: str) -> dict:
             # Деактивация пригласительного кода
             inviteCodeObj.is_active = 0
 
-            stmt = select(t_employee_warehouse.c.warehouse_id).where(t_employee_warehouse.c.employee_id == inviteCodeObj.employee_id)
+            stmt = select(t_employee_warehouse.c.warehouse_id).where(
+                t_employee_warehouse.c.employee_id == inviteCodeObj.employee_id)
             warehouseIds = session.execute(stmt).scalars().all()
 
             AppState.currentUser = User(login=newUser.login,role=newUser.role_id, warehouses=warehouseIds)
@@ -62,7 +63,8 @@ def authorize_user(login: str, password: str) -> dict:
                 if verify_password(password, userObj.password):
                     if not userObj.is_active:
                         return {'success': False, 'message': 'Учетная запись деактивирована'}
-                    stmt = select(t_employee_warehouse.c.warehouse_id).where(t_employee_warehouse.c.employee_id == userObj.employee_id)
+                    stmt = select(t_employee_warehouse.c.warehouse_id).where(
+                        t_employee_warehouse.c.employee_id == userObj.employee_id)
                     warehouseIds = session.execute(stmt).scalars().all()
 
                     AppState.currentUser = User(login=userObj.login, role=userObj.role_id, warehouses=warehouseIds)

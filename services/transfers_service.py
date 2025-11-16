@@ -15,7 +15,8 @@ def get_transfers_data(warehouses=None):
             fromWarehouse = aliased(Warehouse)
             toWarehouse = aliased(Warehouse)
 
-            stmt = select(Transfer.id, fromWarehouse.name, toWarehouse.name, func.concat(Employee.last_name, ' ' , Employee.first_name), Transfer.date)\
+            stmt = select(Transfer.id, fromWarehouse.name, toWarehouse.name,
+                          func.concat(Employee.last_name, ' ' , Employee.first_name), Transfer.date)\
             .join(toWarehouse, toWarehouse.id == Transfer.to_warehouse_id) \
             .join(fromWarehouse, fromWarehouse.id == Transfer.from_warehouse_id) \
             .join(Employee, Employee.id == Transfer.employee_id)\

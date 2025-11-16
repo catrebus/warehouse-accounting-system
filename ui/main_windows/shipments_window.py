@@ -147,7 +147,8 @@ class ShipmentsWindow(BaseWindow):
         newShipmentLayout.addWidget(createShipmentBtn, alignment=Qt.AlignmentFlag.AlignCenter)
 
         newShipmentLayout.addStretch()
-        contentLayout.addWidget(self.newShipmentCard, alignment=Qt.AlignmentFlag.AlignCenter) # Добавление подложки с элементами создания поставки в окно
+        # Добавление подложки с элементами создания поставки в окно
+        contentLayout.addWidget(self.newShipmentCard, alignment=Qt.AlignmentFlag.AlignCenter)
         contentLayout.addSpacing(30)
 
         """Добавление нового поставщика в бд"""

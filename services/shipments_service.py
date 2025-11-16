@@ -11,7 +11,8 @@ from utils.app_state import AppState
 def get_shipments_data(warehouses=None):
     with get_db_session() as session:
         try:
-            stmt = select(Shipment.id, Supplier.name, func.concat(Employee.last_name, ' ' , Employee.first_name), Warehouse.name, Shipment.date)\
+            stmt = select(Shipment.id, Supplier.name, func.concat(Employee.last_name, ' ' , Employee.first_name),
+                          Warehouse.name, Shipment.date)\
                 .join(Supplier, Supplier.id == Shipment.supplier_id)\
                 .join(Employee, Employee.id == Shipment.employee_id)\
                 .join(Warehouse, Warehouse.id == Shipment.warehouse_id)\
@@ -63,7 +64,8 @@ def get_suppliers_data():
 def get_shipment_details(shipmentId):
     with get_db_session() as session:
         try:
-            stmt = select(Product.name, ShipmentLine.quantity).join(Product, Product.id == ShipmentLine.product_id).where(ShipmentLine.shipment_id == shipmentId)
+            stmt = select(Product.name, ShipmentLine.quantity).join(Product, Product.id == ShipmentLine.product_id)\
+                .where(ShipmentLine.shipment_id == shipmentId)
             shipmentDetails = session.execute(stmt).all()
             return {
                 'success': True,
@@ -114,7 +116,8 @@ def add_new_shipment(supplierId:int, warehouseId:int, productsList:List):
         try:
             # Проверки
             for productId, quantity in productsList:
-                stmt = select(Inventory.quantity).where(Inventory.product_id == productId, Inventory.warehouse_id == warehouseId)
+                stmt = select(Inventory.quantity).where(Inventory.product_id == productId,
+                                                        Inventory.warehouse_id == warehouseId)
                 currentQuantity = session.scalar(stmt)
                 if currentQuantity + quantity > 2000000000:
                     return {
@@ -125,14 +128,17 @@ def add_new_shipment(supplierId:int, warehouseId:int, productsList:List):
 
             # Создание записи о поставке
             shipment = Shipment(supplier_id=supplierId,
-                                employee_id=(select(UserAccount.employee_id).where(UserAccount.login == AppState.currentUser.login)).scalar_subquery(),
+                                employee_id=(select(UserAccount.employee_id).\
+                                             where(UserAccount.login == AppState.currentUser.login)).scalar_subquery(),
                                 warehouse_id=warehouseId,
                                 date=datetime.now())
 
             session.add(shipment)
 
             for productId, quantity in productsList:
-                stmt = update(Inventory).where(Inventory.product_id == productId, Inventory.warehouse_id == warehouseId).values(quantity=Inventory.quantity + quantity).values(updated_at=datetime.now())
+                stmt = update(Inventory).where(Inventory.product_id == productId,
+                                               Inventory.warehouse_id == warehouseId)\
+                    .values(quantity=Inventory.quantity + quantity).values(updated_at=datetime.now())
                 session.execute(stmt)
                 shipmentLine = ShipmentLine(shipment_id= shipment.id,product_id=productId,quantity=quantity)
                 session.add(shipmentLine)

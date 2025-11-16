@@ -246,7 +246,8 @@ class ManageEmployeeWindow(QDialog):
             return None
 
         """Изменение записи"""
-        result = update_employee(self.employeeData['id'],firstName, lastName, passportSeries, passportNumber, phoneNumber, post,int(self.isActive.isChecked()), warehouses)
+        result = update_employee(self.employeeData['id'],firstName, lastName, passportSeries, passportNumber,
+                                 phoneNumber, post,int(self.isActive.isChecked()), warehouses)
         if result['success']:
             QMessageBox.information(self, 'Успех', result['message'])
             return None

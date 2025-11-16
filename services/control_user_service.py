@@ -35,18 +35,23 @@ def update_user(login:str, newRole:str, newIsActive:bool):
 
 def get_employees():
     with get_db_session() as session:
-        stmt = select(Employee.id, Employee.first_name, Employee.last_name, Employee.passport_series, Employee.passport_number,Employee.phone_number, Post.name, Employee.date_of_employment, Employee.is_active)\
+        stmt = select(Employee.id, Employee.first_name, Employee.last_name, Employee.passport_series,
+                      Employee.passport_number,Employee.phone_number,
+                      Post.name, Employee.date_of_employment, Employee.is_active)\
             .join(Post, Post.id == Employee.post_id)
         employees = session.execute(stmt)
         res = []
         for id, firstName, lastName, series, number,phone, post, date, isActive in employees:
-            res.append([id, firstName, lastName, series, number,phone, post, str(date.day) + '.' + str(date.month) + '.' + str(date.year), isActive])
+            res.append([id, firstName, lastName, series, number,phone, post,
+                        str(date.day) + '.' + str(date.month) + '.' + str(date.year), isActive])
         return res
 
-def add_employee(firstName:str, lastName:str, passportSeries:str, passportNumber:str, phoneNumber:str, post:str, warehouses:list):
+def add_employee(firstName:str, lastName:str, passportSeries:str, passportNumber:str,
+                 phoneNumber:str, post:str, warehouses:list):
     with get_db_session() as session:
 
-        stmt = select(Employee.passport_series, Employee.passport_number).where(Employee.passport_series==passportSeries).where(Employee.passport_number==passportNumber)
+        stmt = select(Employee.passport_series, Employee.passport_number)\
+            .where(Employee.passport_series==passportSeries).where(Employee.passport_number==passportNumber)
         serNumIndex = session.scalar(stmt)
 
         if serNumIndex:
@@ -55,7 +60,9 @@ def add_employee(firstName:str, lastName:str, passportSeries:str, passportNumber
         stmt = select(Post.id).where(Post.name == post)
         postId = session.execute(stmt).one_or_none()
 
-        newEmployee = Employee(first_name=firstName, last_name=lastName, passport_series=passportSeries, passport_number=passportNumber, phone_number=phoneNumber, post_id=postId[0], date_of_employment=date.today(), is_active=1)
+        newEmployee = Employee(first_name=firstName, last_name=lastName, passport_series=passportSeries,
+                               passport_number=passportNumber, phone_number=phoneNumber, post_id=postId[0],
+                               date_of_employment=date.today(), is_active=1)
 
         warehouseObjects = session.query(Warehouse).filter(Warehouse.id.in_(warehouses)).all()
 
@@ -67,7 +74,9 @@ def add_employee(firstName:str, lastName:str, passportSeries:str, passportNumber
 
 def get_employee_by_id(id:int):
     with get_db_session() as session:
-        stmt = select(Employee.id, Employee.first_name, Employee.last_name, Employee.passport_series, Employee.passport_number,Employee.phone_number, Post.name.label('post'), Employee.date_of_employment, Employee.is_active)\
+        stmt = select(Employee.id, Employee.first_name, Employee.last_name, Employee.passport_series,
+                      Employee.passport_number,Employee.phone_number, Post.name.label('post'),
+                      Employee.date_of_employment, Employee.is_active)\
             .join(Post, Post.id == Employee.post_id).\
             where(Employee.id==id)
         employeeObj = session.execute(stmt).one_or_none()
@@ -80,14 +89,18 @@ def get_employee_by_id(id:int):
 
         data = {'id':employeeObj.id ,'firstName': employeeObj.first_name, 'lastName': employeeObj.last_name,
                 'passportSeries': employeeObj.passport_series, 'passportNumber': employeeObj.passport_number,
-                'phoneNumber': employeeObj.phone_number,'post': employeeObj.post,'dateOfEmployment': employeeObj.date_of_employment, 'isActive': employeeObj.is_active, 'warehouses': warehouseIds}
+                'phoneNumber': employeeObj.phone_number,'post': employeeObj.post,
+                'dateOfEmployment': employeeObj.date_of_employment,
+                'isActive': employeeObj.is_active, 'warehouses': warehouseIds}
 
         return {'success':True, 'data':data}
 
-def update_employee(employeeId:int, firstName:str, lastName:str, passportSeries:str, passportNumber:str, phoneNumber:str, post:str, isActive:int, warehouses:list):
+def update_employee(employeeId:int, firstName:str, lastName:str, passportSeries:str, passportNumber:str,
+                    phoneNumber:str, post:str, isActive:int, warehouses:list):
     with get_db_session() as session:
         # Проверка на существование серии и номера паспорта в бд, исключая обновляемого сотрудника
-        stmt = select(Employee).where(Employee.passport_series == passportSeries, Employee.passport_number == passportNumber, Employee.id != employeeId)
+        stmt = select(Employee).where(Employee.passport_series == passportSeries,
+                                      Employee.passport_number == passportNumber, Employee.id != employeeId)
         serNumIndex = session.execute(stmt).first()
         if serNumIndex:
             return {'success': False, 'message': 'Человек с таким паспортом уже существует'}

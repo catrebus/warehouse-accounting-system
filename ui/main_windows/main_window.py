@@ -57,5 +57,4 @@ class MainWindow(BaseWindow):
         """Навигационная панель"""
         self.navPanel = NavPanel(self)
         mainLayout.addWidget(self.navPanel)
-
         self.setLayout(mainLayout)

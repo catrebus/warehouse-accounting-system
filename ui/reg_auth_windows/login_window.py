@@ -120,8 +120,7 @@ class LoginWindow(BaseWindow):
         padlockIcon = QPixmap('assets/icons/padlock_icon.png')
         padlockIcon = padlockIcon.scaled(360,
                                          360,
-                                         Qt.AspectRatioMode.KeepAspectRatio,
-                                         Qt.TransformationMode.SmoothTransformation)
+                                         Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation)
         iconLabel.setPixmap(padlockIcon)
         iconLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         leftLayout = QHBoxLayout()
@@ -140,8 +139,8 @@ class LoginWindow(BaseWindow):
 
         self.setLayout(mainLayout)
 
-    # Переключение режима пароля
-    def toggle_password_visibility(self):
+    def toggle_password_visibility(self) -> None:
+        """Переключение режима пароля"""
         if self.passwordInput.echoMode() == QLineEdit.EchoMode.Password:
             self.passwordInput.setEchoMode(QLineEdit.EchoMode.Normal)
             self.togglePasswordButton.setIcon(QIcon('assets/icons/opened_eye_icon.png'))
@@ -149,19 +148,20 @@ class LoginWindow(BaseWindow):
             self.passwordInput.setEchoMode(QLineEdit.EchoMode.Password)
             self.togglePasswordButton.setIcon(QIcon('assets/icons/closed_eye_icon.png'))
 
-    # Установка окна в изначальное состояние
-    def set_to_default(self):
+    def set_to_default(self) -> None:
+        """Установка окна в изначальное состояние"""
         self.usernameInput.clear()
         self.passwordInput.clear()
         self.passwordInput.setEchoMode(QLineEdit.EchoMode.Password)
         self.togglePasswordButton.setIcon(QIcon('assets/icons/closed_eye_icon.png'))
 
-    """Переходы между окнами"""
-    def handle_switch_to_register(self):
+    def handle_switch_to_register(self) -> None:
+        """Переход в окно регистрации"""
         self.set_to_default()
         self.switchToRegister.emit()
 
     def handle_switch_to_main(self) -> None:
+        """Обработка нажатия на кнопку Вход"""
         login = self.usernameInput.text().strip()
         password = self.passwordInput.text().strip()
         if len(login) == 0 or len(password) == 0 :

@@ -95,7 +95,7 @@ class CreateNewTransferWindow(QDialog):
                 break
 
     def handle_save_btn(self):
-        """Вернуть [(product_id, quantity), ...]"""
+        """Валидация и внесение информации в бд"""
         result = []
         addedProducts = set()
         for row in range(self.table.rowCount()):
